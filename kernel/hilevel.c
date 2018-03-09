@@ -6,10 +6,40 @@
  */
 
 #include "hilevel.h"
+int n = 2;
+pcb_t pcb[ 2 ];
+int executing = 0;
 
-pcb_t pcb[ 2 ]; int executing = 0;
+//iterates through pcb array to find matching process to ctx
+pid_t match(ctx_t ctx){
+  pid_t id;
+  for (int i = 0; i < n ; i++){
+    if(ctx == pcb[i].ctx) id = pcb[i].pid;
+  }
+  return id;
+}
 
 void scheduler( ctx_t* ctx ) {
+  pid_t cid = match(ctx);
+
+  if (cid == n){
+    int indexold = 0;
+    int indexnew = 1;
+  }
+  else{
+    int indexold = cid-1;
+    int indexnew = cid;
+  }
+
+
+  memcpy( &pcb[ cid-1 ].ctx, ctx, sizeof( ctx_t ) ); // preserve current
+  pcb[ 0 ].status = STATUS_READY;                // update   current status
+  memcpy( ctx, &pcb[ cid ].ctx, sizeof( ctx_t ) ); // restore  new
+  pcb[ 1 ].status = STATUS_EXECUTING;            // update   new status
+  executing = 1;
+
+
+
   if     ( 0 == executing ) {
     memcpy( &pcb[ 0 ].ctx, ctx, sizeof( ctx_t ) ); // preserve P_3
     pcb[ 0 ].status = STATUS_READY;                // update   P_3 status
@@ -71,7 +101,7 @@ void hilevel_handler_rst(ctx_t* ctx) {
 
 void hilevel_handler_irq(ctx_t* ctx) {
 
-  uint32_t id = GICC0->IAR;
+  uint32_t id = GICC0->IAR;d_t    pi
 
   if( id == GIC_SOURCE_TIMER0 ) {
     scheduler( ctx ); TIMER0->Timer1IntClr = 0x01;
