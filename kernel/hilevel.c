@@ -6,54 +6,52 @@
  */
 
 #include "hilevel.h"
-int n = 2;
-pcb_t pcb[ 2 ];
+int n = 3;
+pcb_t pcb[ 3 ];
 int executing = 0;
 
 //iterates through pcb array to find matching process to ctx
-pid_t match(ctx_t ctx){
-  pid_t id;
+pid_t matchID(ctx_t* ctx){
+  pid_t match;
   for (int i = 0; i < n ; i++){
-    if(ctx == pcb[i].ctx) id = pcb[i].pid;
+    if(ctx->id == pcb[i].ctx.id){
+      match = pcb[i].pid;
+    }
   }
-  return id;
+  return match;
+}
+
+pcb_t matchPCB(ctx_t* ctx){
+  pcb_t match;
+  for (int i = 0; i < n ; i++){
+    if(ctx->id == pcb[i].ctx.id){
+      match = pcb[i];
+    }
+  }
+  return match;
 }
 
 void scheduler( ctx_t* ctx ) {
-  pid_t cid = match(ctx);
+  pid_t cid = matchID(ctx);
+
+  int old;
+  int new;
 
   if (cid == n){
-    int indexold = 0;
-    int indexnew = 1;
+    old = 0;
+    new = 1;
+    PL011_putc( UART0, 'X', true );
   }
   else{
-    int indexold = cid-1;
-    int indexnew = cid;
+    old = cid-1;
+    new = cid;
+    PL011_putc( UART0, 'O', true );
   }
 
-
-  memcpy( &pcb[ cid-1 ].ctx, ctx, sizeof( ctx_t ) ); // preserve current
-  pcb[ 0 ].status = STATUS_READY;                // update   current status
-  memcpy( ctx, &pcb[ cid ].ctx, sizeof( ctx_t ) ); // restore  new
-  pcb[ 1 ].status = STATUS_EXECUTING;            // update   new status
-  executing = 1;
-
-
-
-  if     ( 0 == executing ) {
-    memcpy( &pcb[ 0 ].ctx, ctx, sizeof( ctx_t ) ); // preserve P_3
-    pcb[ 0 ].status = STATUS_READY;                // update   P_3 status
-    memcpy( ctx, &pcb[ 1 ].ctx, sizeof( ctx_t ) ); // restore  P_4
-    pcb[ 1 ].status = STATUS_EXECUTING;            // update   P_4 status
-    executing = 1;                                 // update   index => P_4
-  }
-  else if( 1 == executing ) {
-    memcpy( &pcb[ 1 ].ctx, ctx, sizeof( ctx_t ) ); // preserve P_4
-    pcb[ 1 ].status = STATUS_READY;                // update   P_4 status
-    memcpy( ctx, &pcb[ 0 ].ctx, sizeof( ctx_t ) ); // restore  P_3
-    pcb[ 0 ].status = STATUS_EXECUTING;            // update   P_3 status
-    executing = 0;                                 // update   index => P_3
-  }
+  memcpy( &pcb[ old ].ctx, ctx, sizeof( ctx_t ) ); // preserve current
+  pcb[ old ].status = STATUS_READY;                // update   current status
+  memcpy( ctx, &pcb[ new ].ctx, sizeof( ctx_t ) ); // restore  new
+  pcb[ new ].status = STATUS_EXECUTING;            // update   new status
 
   return;
 }
@@ -62,6 +60,8 @@ extern void     main_P3();
 extern uint32_t tos_P3;
 extern void     main_P4();
 extern uint32_t tos_P4;
+extern void     main_P5();
+extern uint32_t tos_P5;
 
 void hilevel_handler_rst(ctx_t* ctx) {
 
@@ -79,6 +79,7 @@ void hilevel_handler_rst(ctx_t* ctx) {
   memset( &pcb[ 0 ], 0, sizeof( pcb_t ) );
   pcb[ 0 ].pid      = 1;
   pcb[ 0 ].status   = STATUS_READY;
+  pcb[ 0 ].ctx.id   = 1;
   pcb[ 0 ].ctx.cpsr = 0x50;
   pcb[ 0 ].ctx.pc   = ( uint32_t )( &main_P3 );
   pcb[ 0 ].ctx.sp   = ( uint32_t )( &tos_P3  );
@@ -86,9 +87,18 @@ void hilevel_handler_rst(ctx_t* ctx) {
   memset( &pcb[ 1 ], 0, sizeof( pcb_t ) );
   pcb[ 1 ].pid      = 2;
   pcb[ 1 ].status   = STATUS_READY;
+  pcb[ 1 ].ctx.id   = 2;
   pcb[ 1 ].ctx.cpsr = 0x50;
   pcb[ 1 ].ctx.pc   = ( uint32_t )( &main_P4 );
   pcb[ 1 ].ctx.sp   = ( uint32_t )( &tos_P4  );
+
+  memset( &pcb[ 2 ], 0, sizeof( pcb_t ) );
+  pcb[ 2 ].pid      = 3;
+  pcb[ 2 ].status   = STATUS_READY;
+  pcb[ 2 ].ctx.id   = 3;
+  pcb[ 2 ].ctx.cpsr = 0x50;
+  pcb[ 2 ].ctx.pc   = ( uint32_t )( &main_P5 );
+  pcb[ 2 ].ctx.sp   = ( uint32_t )( &tos_P5  );
 
   memcpy( ctx, &pcb[ 0 ].ctx, sizeof( ctx_t ) );
   pcb[ 0 ].status = STATUS_EXECUTING;
@@ -96,12 +106,16 @@ void hilevel_handler_rst(ctx_t* ctx) {
 
   int_enable_irq();
 
+  PL011_putc( UART0, 'R', true );
+
   return;
 }
 
 void hilevel_handler_irq(ctx_t* ctx) {
+  PL011_putc( UART0, 'T', true );
 
-  uint32_t id = GICC0->IAR;d_t    pi
+
+  uint32_t id = GICC0->IAR;
 
   if( id == GIC_SOURCE_TIMER0 ) {
     scheduler( ctx ); TIMER0->Timer1IntClr = 0x01;
