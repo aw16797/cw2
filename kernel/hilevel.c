@@ -7,54 +7,74 @@
 
 #include "hilevel.h"
 int n = 3;
-pcb_t pcb[ 3 ];
 int executing = 0;
+pcb_t pcb[ 3 ];
+int current = 0;
+
+void scheduler( ctx_t* ctx ) {                     //scheduler with current context
+  // no need to determine current process (executing == 0)?
+  // can have priority based on 'can stay for 3 timer interrupts'
+
+   //let shortest have number 1 priority
+   //let longest have lower priority than however many ps can be done in that time, then go
+
+   if ( current == n-1) { current = 0; }
+
+   memcpy( &pcb[ current ].ctx, ctx, sizeof( ctx_t ) );
+   pcb[ current ].status = STATUS_READY;
+
+   memcpy( ctx, &pcb[ (current + 1) ].ctx, sizeof( ctx_t ) );
+   pcb[ (current + 1) ].status = STATUS_EXECUTING;
+
+   current = current + 1;
+}
+
 
 //iterates through pcb array to find matching process to ctx
-pid_t matchID(ctx_t* ctx){
-  pid_t match;
-  for (int i = 0; i < n ; i++){
-    if(ctx->id == pcb[i].ctx.id){
-      match = pcb[i].pid;
-    }
-  }
-  return match;
-}
-
-pcb_t matchPCB(ctx_t* ctx){
-  pcb_t match;
-  for (int i = 0; i < n ; i++){
-    if(ctx->id == pcb[i].ctx.id){
-      match = pcb[i];
-    }
-  }
-  return match;
-}
-
-void scheduler( ctx_t* ctx ) {
-  pid_t cid = matchID(ctx);
-
-  int old;
-  int new;
-
-  if (cid == n){
-    old = 0;
-    new = 1;
-    PL011_putc( UART0, 'X', true );
-  }
-  else{
-    old = cid-1;
-    new = cid;
-    PL011_putc( UART0, 'O', true );
-  }
-
-  memcpy( &pcb[ old ].ctx, ctx, sizeof( ctx_t ) ); // preserve current
-  pcb[ old ].status = STATUS_READY;                // update   current status
-  memcpy( ctx, &pcb[ new ].ctx, sizeof( ctx_t ) ); // restore  new
-  pcb[ new ].status = STATUS_EXECUTING;            // update   new status
-
-  return;
-}
+// pid_t matchID(ctx_t* ctx){
+//   pid_t match;
+//   for (int i = 0; i < n ; i++){
+//     if(ctx->id == pcb[i].ctx.id){
+//       match = pcb[i].pid;
+//     }
+//   }
+//   return match;
+// }
+//
+// pcb_t matchPCB(ctx_t* ctx){
+//   pcb_t match;
+//   for (int i = 0; i < n ; i++){
+//     if(ctx->id == pcb[i].ctx.id){
+//       match = pcb[i];
+//     }
+//   }
+//   return match;
+// }
+//
+// void scheduler( ctx_t* ctx ) {
+//   pid_t cid = matchID(ctx);
+//
+//   int old;
+//   int new;
+//
+//   if (cid == n){
+//     old = 0;
+//     new = 1;
+//     PL011_putc( UART0, 'X', true );
+//   }
+//   else{
+//     old = cid-1;
+//     new = cid;
+//     PL011_putc( UART0, 'O', true );
+//   }
+//
+//   memcpy( &pcb[ old ].ctx, ctx, sizeof( ctx_t ) ); // preserve current
+//   pcb[ old ].status = STATUS_READY;                // update   current status
+//   memcpy( ctx, &pcb[ new ].ctx, sizeof( ctx_t ) ); // restore  new
+//   pcb[ new ].status = STATUS_EXECUTING;            // update   new status
+//
+//   return;
+// }
 
 extern void     main_P3();
 extern uint32_t tos_P3;
