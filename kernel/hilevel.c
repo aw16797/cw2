@@ -6,52 +6,46 @@
  */
 
 #include "hilevel.h"
-int n = 1;
-pcb_t pcb[ 2 ];
+#define pnum  2
+#define n  pnum-1
+pcb_t pcb[ pnum ];
 int current = 0;
 int new = 0;
-
-void scheduler( ctx_t* ctx ) {                     //scheduler with current context
-
-   //let shortest have number 1 priority
-   //let longest have lower priority than however many ps can be done in that time, then go
-
-   //logic for new index
-   if (pcb[current].prtc == pcb[current].prt){
-     //if current process is last process, go back to first process
-     if ( current == n) new = 0;
-     else new = current + 1;
-
-     //preserve
-     memcpy( &pcb[ current ].ctx, ctx, sizeof( ctx_t ) );
-     pcb[ current ].status = STATUS_READY;
-
-     //restore
-     memcpy( ctx, &pcb[ (new) ].ctx, sizeof( ctx_t ) );
-     pcb[ (new) ].status = STATUS_EXECUTING;
-
-     //restore current priority counter
-     pcb[current].prtc = 0;
-
-     //update current index
-     current = new;
-
-
-   }
-   else{
-     pcb[current].prtc++;
-   }
-
-
-   return;
-}
 
 extern void     main_P3();
 extern uint32_t tos_P3;
 extern void     main_P4();
 extern uint32_t tos_P4;
+
 // extern void     main_P5();
 // extern uint32_t tos_P5;
+
+void scheduler( ctx_t* ctx ) {
+  //priority counter logic
+  if (pcb[current].prtc == pcb[current].prt){
+    //process index logic
+    if ( current == n) new = 0;
+    else new = current + 1;
+
+    //preserve
+    memcpy( &pcb[ current ].ctx, ctx, sizeof( ctx_t ) );
+    pcb[ current ].status = STATUS_READY;
+
+    //restore
+    memcpy( ctx, &pcb[ (new) ].ctx, sizeof( ctx_t ) );
+    pcb[ (new) ].status = STATUS_EXECUTING;
+
+    //restore current priority counter
+    pcb[current].prtc = 0;
+
+    //update current index
+    current = new;
+  }
+  else{
+    pcb[current].prtc++;
+  }
+  return;
+}
 
 void hilevel_handler_rst(ctx_t* ctx) {
 
