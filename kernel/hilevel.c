@@ -6,8 +6,8 @@
  */
 
 #include "hilevel.h"
-#define pnum  2
-#define n  pnum-1
+#define pnum (2)
+#define ni (pnum-1)
 pcb_t pcb[ pnum ];
 int current = 0;
 int new = 0;
@@ -24,7 +24,7 @@ void scheduler( ctx_t* ctx ) {
   //priority counter logic
   if (pcb[current].prtc == pcb[current].prt){
     //process index logic
-    if ( current == n) new = 0;
+    if ( current == ni) new = 0;
     else new = current + 1;
 
     //preserve
