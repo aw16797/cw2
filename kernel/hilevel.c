@@ -70,12 +70,12 @@ void hilevel_handler_rst(ctx_t* ctx) {
   pcb[ 1 ].ctx.pc   = ( uint32_t )( &main_P4 );
   pcb[ 1 ].ctx.sp   = ( uint32_t )( &tos_P4  );
 
-  memset( &pcb[ 2 ], 0, sizeof( pcb_t ) );
-  pcb[ 2 ].pid      = 3;
-  pcb[ 2 ].status   = STATUS_READY;
-  pcb[ 2 ].ctx.cpsr = 0x50;
-  pcb[ 2 ].ctx.pc   = ( uint32_t )( &main_P5 );
-  pcb[ 2 ].ctx.sp   = ( uint32_t )( &tos_P5  );
+  // memset( &pcb[ 2 ], 0, sizeof( pcb_t ) );
+  // pcb[ 2 ].pid      = 3;
+  // pcb[ 2 ].status   = STATUS_READY;
+  // pcb[ 2 ].ctx.cpsr = 0x50;
+  // pcb[ 2 ].ctx.pc   = ( uint32_t )( &main_P5 );
+  // pcb[ 2 ].ctx.sp   = ( uint32_t )( &tos_P5  );
 
   memcpy( ctx, &pcb[ 0 ].ctx, sizeof( ctx_t ) );
   pcb[ 0 ].status = STATUS_EXECUTING;
