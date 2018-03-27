@@ -7,31 +7,41 @@
 
 #include "hilevel.h"
 int n = 1;
-int executing = 0;
 pcb_t pcb[ 2 ];
 int current = 0;
 int new = 0;
 
 void scheduler( ctx_t* ctx ) {                     //scheduler with current context
-  // no need to determine current process (executing == 0)?
-  // can have priority based on 'can stay for 3 timer interrupts'
 
    //let shortest have number 1 priority
    //let longest have lower priority than however many ps can be done in that time, then go
 
    //logic for new index
-   if ( current == n) new = 0;
-   else new = current + 1;
+   if (pcb[current].prtc == pcb[current].prt){
+     //if current process is last process, go back to first process
+     if ( current == n) new = 0;
+     else new = current + 1;
 
-   //preserve
-   memcpy( &pcb[ current ].ctx, ctx, sizeof( ctx_t ) );
-   pcb[ current ].status = STATUS_READY;
+     //preserve
+     memcpy( &pcb[ current ].ctx, ctx, sizeof( ctx_t ) );
+     pcb[ current ].status = STATUS_READY;
 
-   memcpy( ctx, &pcb[ (new) ].ctx, sizeof( ctx_t ) );
-   pcb[ (new) ].status = STATUS_EXECUTING;
+     //restore
+     memcpy( ctx, &pcb[ (new) ].ctx, sizeof( ctx_t ) );
+     pcb[ (new) ].status = STATUS_EXECUTING;
 
-   //update current index
-   current = new;
+     //restore current priority counter
+     pcb[current].prtc = 0;
+
+     //update current index
+     current = new;
+
+
+   }
+   else{
+     pcb[current].prtc++;
+   }
+
 
    return;
 }
@@ -62,6 +72,8 @@ void hilevel_handler_rst(ctx_t* ctx) {
   pcb[ 0 ].ctx.cpsr = 0x50;
   pcb[ 0 ].ctx.pc   = ( uint32_t )( &main_P3 );
   pcb[ 0 ].ctx.sp   = ( uint32_t )( &tos_P3  );
+  pcb[ 0 ].prt      = 3
+  pcb[ 0 ].prtc     = 0
 
   memset( &pcb[ 1 ], 0, sizeof( pcb_t ) );
   pcb[ 1 ].pid      = 2;
@@ -69,6 +81,8 @@ void hilevel_handler_rst(ctx_t* ctx) {
   pcb[ 1 ].ctx.cpsr = 0x50;
   pcb[ 1 ].ctx.pc   = ( uint32_t )( &main_P4 );
   pcb[ 1 ].ctx.sp   = ( uint32_t )( &tos_P4  );
+  pcb[ 1 ].prt      = 5
+  pcb[ 1 ].prtc     = 0
 
   // memset( &pcb[ 2 ], 0, sizeof( pcb_t ) );
   // pcb[ 2 ].pid      = 3;
@@ -79,7 +93,9 @@ void hilevel_handler_rst(ctx_t* ctx) {
 
   memcpy( ctx, &pcb[ 0 ].ctx, sizeof( ctx_t ) );
   pcb[ 0 ].status = STATUS_EXECUTING;
-  executing = 0;
+
+  current = 0;
+  new = 0;
 
   int_enable_irq();
 
