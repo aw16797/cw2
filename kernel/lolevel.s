@@ -16,10 +16,11 @@
 
 lolevel_handler_rst: bl    int_init                @ initialise interrupt vector table
 
-                     msr   cpsr, #0xD2             @ enter IRQ mode with IRQ and FIQ interrupts disabled
-                     ldr   sp, =tos_irq            @ initialise IRQ mode stack
                      msr   cpsr, #0xD3             @ enter SVC mode with IRQ and FIQ interrupts disabled
                      ldr   sp, =tos_svc            @ initialise SVC mode stack
+
+                     msr   cpsr, #0xD2             @ enter IRQ mode with IRQ and FIQ interrupts disabled
+                     ldr   sp, =tos_irq            @ initialise IRQ mode stack
 
                      sub   sp, sp, #68             @ initialise dummy context
 

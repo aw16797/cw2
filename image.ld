@@ -16,12 +16,12 @@ SECTIONS {
   .bss  : {                         *(.bss         ) }
   /* align       address (per AAPCS) */
   .       = ALIGN( 8 );
-  /* allocate stack for irq mode     */
-  .       = . + 0x00001000;
-  tos_irq = .;
   /* allocate stack for svc mode     */
   .       = . + 0x00001000;
   tos_svc = .;
+  /* allocate stack for irq mode     */
+  .       = . + 0x00001000;
+  tos_irq = .;
   /* allocate stack for P3           */
   .       = . + 0x00001000;
   tos_P3  = .;

@@ -6,10 +6,11 @@
  */
 
 #include "hilevel.h"
-int n = 3;
+int n = 2;
 int executing = 0;
 pcb_t pcb[ 3 ];
 int current = 0;
+int new = 0;
 
 void scheduler( ctx_t* ctx ) {                     //scheduler with current context
   // no need to determine current process (executing == 0)?
@@ -18,63 +19,22 @@ void scheduler( ctx_t* ctx ) {                     //scheduler with current cont
    //let shortest have number 1 priority
    //let longest have lower priority than however many ps can be done in that time, then go
 
-   if ( current == n-1) { current = 0; }
+   //logic for new index
+   if ( current == n) new = 0;
+   else new = current + 1;
 
+   //preserve
    memcpy( &pcb[ current ].ctx, ctx, sizeof( ctx_t ) );
    pcb[ current ].status = STATUS_READY;
 
-   memcpy( ctx, &pcb[ (current + 1) ].ctx, sizeof( ctx_t ) );
-   pcb[ (current + 1) ].status = STATUS_EXECUTING;
+   memcpy( ctx, &pcb[ (new) ].ctx, sizeof( ctx_t ) );
+   pcb[ (new) ].status = STATUS_EXECUTING;
 
-   current = current + 1;
+   //update current index
+   current = new;
+
+   return;
 }
-
-
-//iterates through pcb array to find matching process to ctx
-// pid_t matchID(ctx_t* ctx){
-//   pid_t match;
-//   for (int i = 0; i < n ; i++){
-//     if(ctx->id == pcb[i].ctx.id){
-//       match = pcb[i].pid;
-//     }
-//   }
-//   return match;
-// }
-//
-// pcb_t matchPCB(ctx_t* ctx){
-//   pcb_t match;
-//   for (int i = 0; i < n ; i++){
-//     if(ctx->id == pcb[i].ctx.id){
-//       match = pcb[i];
-//     }
-//   }
-//   return match;
-// }
-//
-// void scheduler( ctx_t* ctx ) {
-//   pid_t cid = matchID(ctx);
-//
-//   int old;
-//   int new;
-//
-//   if (cid == n){
-//     old = 0;
-//     new = 1;
-//     PL011_putc( UART0, 'X', true );
-//   }
-//   else{
-//     old = cid-1;
-//     new = cid;
-//     PL011_putc( UART0, 'O', true );
-//   }
-//
-//   memcpy( &pcb[ old ].ctx, ctx, sizeof( ctx_t ) ); // preserve current
-//   pcb[ old ].status = STATUS_READY;                // update   current status
-//   memcpy( ctx, &pcb[ new ].ctx, sizeof( ctx_t ) ); // restore  new
-//   pcb[ new ].status = STATUS_EXECUTING;            // update   new status
-//
-//   return;
-// }
 
 extern void     main_P3();
 extern uint32_t tos_P3;
@@ -92,14 +52,13 @@ void hilevel_handler_rst(ctx_t* ctx) {
   TIMER0->Timer1Ctrl |= 0x00000080; // enable          timer
 
   GICC0->PMR          = 0x000000F0; // unmask all            interrupts
-  GICD0->ISENABLER1  |= 0x00000010; // enable timer          interrupt
+  GICD0->ISENABLER1  |= 0x00000010; // enable timer          interrupt   pcb[ (current + 1) ].status = STATUS_EXECUTING;
   GICC0->CTLR         = 0x00000001; // enable GIC interface
   GICD0->CTLR         = 0x00000001; // enable GIC distributor
 
   memset( &pcb[ 0 ], 0, sizeof( pcb_t ) );
   pcb[ 0 ].pid      = 1;
   pcb[ 0 ].status   = STATUS_READY;
-  pcb[ 0 ].ctx.id   = 1;
   pcb[ 0 ].ctx.cpsr = 0x50;
   pcb[ 0 ].ctx.pc   = ( uint32_t )( &main_P3 );
   pcb[ 0 ].ctx.sp   = ( uint32_t )( &tos_P3  );
@@ -107,7 +66,6 @@ void hilevel_handler_rst(ctx_t* ctx) {
   memset( &pcb[ 1 ], 0, sizeof( pcb_t ) );
   pcb[ 1 ].pid      = 2;
   pcb[ 1 ].status   = STATUS_READY;
-  pcb[ 1 ].ctx.id   = 2;
   pcb[ 1 ].ctx.cpsr = 0x50;
   pcb[ 1 ].ctx.pc   = ( uint32_t )( &main_P4 );
   pcb[ 1 ].ctx.sp   = ( uint32_t )( &tos_P4  );
@@ -115,7 +73,6 @@ void hilevel_handler_rst(ctx_t* ctx) {
   memset( &pcb[ 2 ], 0, sizeof( pcb_t ) );
   pcb[ 2 ].pid      = 3;
   pcb[ 2 ].status   = STATUS_READY;
-  pcb[ 2 ].ctx.id   = 3;
   pcb[ 2 ].ctx.cpsr = 0x50;
   pcb[ 2 ].ctx.pc   = ( uint32_t )( &main_P5 );
   pcb[ 2 ].ctx.sp   = ( uint32_t )( &tos_P5  );
@@ -126,15 +83,10 @@ void hilevel_handler_rst(ctx_t* ctx) {
 
   int_enable_irq();
 
-  PL011_putc( UART0, 'R', true );
-
   return;
 }
 
 void hilevel_handler_irq(ctx_t* ctx) {
-  PL011_putc( UART0, 'T', true );
-
-
   uint32_t id = GICC0->IAR;
 
   if( id == GIC_SOURCE_TIMER0 ) {
@@ -165,6 +117,11 @@ void hilevel_handler_svc(ctx_t* ctx, uint32_t id) {
 
       ctx->gpr[ 0 ] = n;
       break;
+    }
+    case 0x04 : {//0x04 => exit
+      //clean pcb for p5
+
+      //call scheduler
     }
 
     default   : { // 0x?? => unknown/unsupported

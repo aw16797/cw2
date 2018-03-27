@@ -35,7 +35,6 @@ typedef enum {
 } status_t;
 
 typedef struct {
-  pid_t id;
   uint32_t cpsr, pc, gpr[ 13 ], sp, lr;
 } ctx_t;
 
@@ -43,6 +42,7 @@ typedef struct {
      pid_t    pid;
   status_t status;
      ctx_t    ctx;
+     
 } pcb_t;
 
 #endif
