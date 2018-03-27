@@ -6,7 +6,7 @@
  */
 
 #include "hilevel.h"
-#define pnum (2)
+#define pnum 2
 #define ni (pnum-1)
 pcb_t pcb[ pnum ];
 int current = 0;
