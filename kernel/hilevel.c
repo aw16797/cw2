@@ -85,7 +85,7 @@ void hilevel_handler_rst(ctx_t* ctx) {
   pcb[ 0 ].ctx.cpsr = 0x50;
   pcb[ 0 ].ctx.pc   = ( uint32_t )( &main_P3 );
   pcb[ 0 ].ctx.sp   = ( uint32_t )( &tos_P3  );
-  pcb[ 0 ].prtb     = 3;
+  pcb[ 0 ].prtb     = 1;
   pcb[ 0 ].prtc     = 0;
 
   memset( &pcb[ 1 ], 0, sizeof( pcb_t ) );
@@ -94,7 +94,7 @@ void hilevel_handler_rst(ctx_t* ctx) {
   pcb[ 1 ].ctx.cpsr = 0x50;
   pcb[ 1 ].ctx.pc   = ( uint32_t )( &main_P4 );
   pcb[ 1 ].ctx.sp   = ( uint32_t )( &tos_P4  );
-  pcb[ 1 ].prtb     = 5;
+  pcb[ 1 ].prtb     = 1;
   pcb[ 1 ].prtc     = 0;
 
   // memset( &pcb[ 2 ], 0, sizeof( pcb_t ) );
