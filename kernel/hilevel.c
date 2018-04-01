@@ -48,15 +48,15 @@ void scheduler( ctx_t* ctx ) {
   new = findMaxPriority();
 
   //preserve
-  memcpy( &pcb[ current ].ctx, ctx, sizeof( ctx_t ) );
-  pcb[ current ].status = STATUS_READY;
+  memcpy( &pcb[ current-1 ].ctx, ctx, sizeof( ctx_t ) );
+  pcb[ current-1 ].status = STATUS_READY;
 
   //restore
-  memcpy( ctx, &pcb[ (new) ].ctx, sizeof( ctx_t ) );
-  pcb[ (new) ].status = STATUS_EXECUTING;
+  memcpy( ctx, &pcb[ (new-1) ].ctx, sizeof( ctx_t ) );
+  pcb[ (new-1) ].status = STATUS_EXECUTING;
 
   //restore current priority counter
-  pcb[current].prtc = 0;
+  pcb[current-1].prtc = 0;
 
   updatePriority(current);
 
