@@ -9,8 +9,8 @@
 #define pnum 2
 #define ni (pnum-1)
 pcb_t pcb[ pnum ];
-int current = 0;
-int new = 0;
+int current = 1;
+int new = 1;
 
 extern void     main_P3();
 extern uint32_t tos_P3;
@@ -107,8 +107,8 @@ void hilevel_handler_rst(ctx_t* ctx) {
   memcpy( ctx, &pcb[ 0 ].ctx, sizeof( ctx_t ) );
   pcb[ 0 ].status = STATUS_EXECUTING;
 
-  current = 0;
-  new = 0;
+  current = 1;
+  new = 1;
 
   int_enable_irq();
 
