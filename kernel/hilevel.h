@@ -42,7 +42,7 @@ typedef struct {
      pid_t    pid;
   status_t status;
      ctx_t    ctx;
-       int    prt;
+       int   prtb;
        int   prtc;
 } pcb_t;
 

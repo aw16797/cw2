@@ -20,30 +20,49 @@ extern uint32_t tos_P4;
 // extern void     main_P5();
 // extern uint32_t tos_P5;
 
+pid_t findMaxPriority(){
+  int maxP = pcb[0].prtc;
+  pid_t maxPi = pcb[0].pid;
+  for (int i = 1; i < pnum ; i++){
+    if (pcb[i].prtc > maxP){
+      maxP = pcb[i].prtc;
+      maxPi = pcb[i].pid;
+    }
+  }
+  return maxPi;
+}
+
+void updatePriority(pid_t current){
+  for (int i = 0; i < pnum; i++){
+    if (pcb[i].pid != current){
+      pcb[i].prtc = pcb[i].prtc + pcb[i].prtb
+    }
+  }
+}
+
 void scheduler( ctx_t* ctx ) {
-  //priority counter logic
-  if (pcb[current].prtc == pcb[current].prt){
-    //process index logic
-    if ( current == ni) new = 0;
-    else new = current + 1;
+  //find max p process
+  //preserve old, restore new
+  //increment other processes p
 
-    //preserve
-    memcpy( &pcb[ current ].ctx, ctx, sizeof( ctx_t ) );
-    pcb[ current ].status = STATUS_READY;
+  new = maxPi;
 
-    //restore
-    memcpy( ctx, &pcb[ (new) ].ctx, sizeof( ctx_t ) );
-    pcb[ (new) ].status = STATUS_EXECUTING;
+  //preserve
+  memcpy( &pcb[ current ].ctx, ctx, sizeof( ctx_t ) );
+  pcb[ current ].status = STATUS_READY;
 
-    //restore current priority counter
-    pcb[current].prtc = 0;
+  //restore
+  memcpy( ctx, &pcb[ (new) ].ctx, sizeof( ctx_t ) );
+  pcb[ (new) ].status = STATUS_EXECUTING;
 
-    //update current index
-    current = new;
-  }
-  else{
-    pcb[current].prtc++;
-  }
+  //restore current priority counter
+  pcb[current].prtc = 0;
+
+  updatePriority(current);
+
+  //update current index
+  current = new
+
   return;
 }
 
@@ -66,7 +85,7 @@ void hilevel_handler_rst(ctx_t* ctx) {
   pcb[ 0 ].ctx.cpsr = 0x50;
   pcb[ 0 ].ctx.pc   = ( uint32_t )( &main_P3 );
   pcb[ 0 ].ctx.sp   = ( uint32_t )( &tos_P3  );
-  pcb[ 0 ].prt      = 3;
+  pcb[ 0 ].prtb     = 3;
   pcb[ 0 ].prtc     = 0;
 
   memset( &pcb[ 1 ], 0, sizeof( pcb_t ) );
@@ -75,7 +94,7 @@ void hilevel_handler_rst(ctx_t* ctx) {
   pcb[ 1 ].ctx.cpsr = 0x50;
   pcb[ 1 ].ctx.pc   = ( uint32_t )( &main_P4 );
   pcb[ 1 ].ctx.sp   = ( uint32_t )( &tos_P4  );
-  pcb[ 1 ].prt      = 5;
+  pcb[ 1 ].prtb     = 5;
   pcb[ 1 ].prtc     = 0;
 
   // memset( &pcb[ 2 ], 0, sizeof( pcb_t ) );
