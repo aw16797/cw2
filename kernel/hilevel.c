@@ -34,9 +34,9 @@ pid_t findMaxPriority(){
   return maxPi;
 }
 
-void updatePriority(pid_t current){
+void updatePriority(){
   for (int i = 0; i < pnum; i++){
-    if (pcb[i].pid != current){
+    if (pcb[i].pid != cid){
       pcb[i].prtc = pcb[i].prtc + pcb[i].prtb;
     }
   }
@@ -58,7 +58,7 @@ void scheduler( ctx_t* ctx ) {
   memcpy( ctx, &pcb[ next ].ctx, sizeof( ctx_t ) );
   pcb[ next ].status = STATUS_EXECUTING;
 
-  updatePriority(current);
+  updatePriority();
 
   //update current index
   cid = nid;
