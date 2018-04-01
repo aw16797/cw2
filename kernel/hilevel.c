@@ -55,8 +55,8 @@ void scheduler( ctx_t* ctx ) {
   pcb[ current ].status = STATUS_READY;
 
   //restore
-  memcpy( ctx, &pcb[ new ].ctx, sizeof( ctx_t ) );
-  pcb[ new ].status = STATUS_EXECUTING;
+  memcpy( ctx, &pcb[ next ].ctx, sizeof( ctx_t ) );
+  pcb[ next ].status = STATUS_EXECUTING;
 
   updatePriority(current);
 
