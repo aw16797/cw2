@@ -9,8 +9,10 @@
 #define pnum 2
 #define ni (pnum-1)
 pcb_t pcb[ pnum ];
-int current = 1;
-int new = 1;
+int cid = 1;
+int nid = 1;
+int current = 0;
+int next = 0;
 
 extern void     main_P3();
 extern uint32_t tos_P3;
@@ -45,23 +47,22 @@ void scheduler( ctx_t* ctx ) {
   //preserve old, restore new
   //increment other processes p
 
-  new = findMaxPriority();
+  nid = findMaxPriority();
+  next = nid-1;
 
   //preserve
-  memcpy( &pcb[ current-1 ].ctx, ctx, sizeof( ctx_t ) );
-  pcb[ current-1 ].status = STATUS_READY;
+  memcpy( &pcb[ current ].ctx, ctx, sizeof( ctx_t ) );
+  pcb[ current ].status = STATUS_READY;
 
   //restore
-  memcpy( ctx, &pcb[ (new-1) ].ctx, sizeof( ctx_t ) );
-  pcb[ (new-1) ].status = STATUS_EXECUTING;
-
-  //restore current priority counter
-  pcb[current-1].prtc = 0;
+  memcpy( ctx, &pcb[ new ].ctx, sizeof( ctx_t ) );
+  pcb[ new ].status = STATUS_EXECUTING;
 
   updatePriority(current);
 
   //update current index
-  current = new;
+  cid = nid;
+  current = next;
 
   return;
 }
@@ -107,8 +108,10 @@ void hilevel_handler_rst(ctx_t* ctx) {
   memcpy( ctx, &pcb[ 0 ].ctx, sizeof( ctx_t ) );
   pcb[ 0 ].status = STATUS_EXECUTING;
 
-  current = 1;
-  new = 1;
+  cid = 1;
+  nid = 1;
+  current = 0;
+  next = 0;
 
   int_enable_irq();
 
