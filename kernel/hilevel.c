@@ -25,9 +25,11 @@ extern void     main_console();
 extern uint32_t tos_console;
 
 pid_t findMaxPriority(){
+  pid_t maxP = pcb[0].prtc;
   pid_t maxPi = pcb[0].pid;
   for (int i = 1; i < pnum ; i++){
     if (pcb[i].prtc > maxP){
+      maxP = pcb[0].prtc;
       maxPi = pcb[i].pid;
     }
   }
