@@ -6,13 +6,11 @@
  */
 
 #include "hilevel.h"
-#define pnum 3
+#define pnum 10
 #define ni (pnum-1)
 pcb_t pcb[ pnum ];
-int cid = 1;
-int nid = 1;
-int current = 0;
-int next = 0;
+int cid = 0;
+int nid = 0;
 
 extern void     main_P3();
 extern uint32_t tos_P3;
@@ -20,18 +18,16 @@ extern uint32_t tos_P3;
 extern void     main_P4();
 extern uint32_t tos_P4;
 
-// extern void     main_P5();
-// extern uint32_t tos_P5;
+extern void     main_P5();
+extern uint32_t tos_P5;
 
 extern void     main_console();
 extern uint32_t tos_console;
 
 pid_t findMaxPriority(){
-  int maxP = pcb[0].prtc;
   pid_t maxPi = pcb[0].pid;
   for (int i = 1; i < pnum ; i++){
     if (pcb[i].prtc > maxP){
-      maxP = pcb[i].prtc;
       maxPi = pcb[i].pid;
     }
   }
@@ -47,26 +43,21 @@ void updatePriority(){
 }
 
 void scheduler( ctx_t* ctx ) {
-  //find max p process
-  //preserve old, restore new
-  //increment other processes p
-
+  //update nid with max prtc process
   nid = findMaxPriority();
-  next = nid-1;
 
   //preserve
-  memcpy( &pcb[ current ].ctx, ctx, sizeof( ctx_t ) );
-  pcb[ current ].status = STATUS_READY;
+  memcpy( &pcb[ cid ].ctx, ctx, sizeof( ctx_t ) );
+  pcb[ cid ].status = STATUS_READY;
 
   //restore
-  memcpy( ctx, &pcb[ next ].ctx, sizeof( ctx_t ) );
-  pcb[ next ].status = STATUS_EXECUTING;
+  memcpy( ctx, &pcb[ nid ].ctx, sizeof( ctx_t ) );
+  pcb[ nid ].status = STATUS_EXECUTING;
 
   updatePriority();
 
-  //update current index
+  //update cid
   cid = nid;
-  current = next;
 
   return;
 }
@@ -84,48 +75,50 @@ void hilevel_handler_rst(ctx_t* ctx) {
   GICC0->CTLR         = 0x00000001; // enable GIC interface
   GICD0->CTLR         = 0x00000001; // enable GIC distributor
 
+  //initialise console
   memset( &pcb[ 0 ], 0, sizeof( pcb_t ) );
-  pcb[ 0 ].pid      = 1;
+  pcb[ 0 ].pid      = 0;
   pcb[ 0 ].status   = STATUS_READY;
   pcb[ 0 ].ctx.cpsr = 0x50;
-  pcb[ 0 ].ctx.pc   = ( uint32_t )( &main_P3 );
-  pcb[ 0 ].ctx.sp   = ( uint32_t )( &tos_P3  );
-  pcb[ 0 ].prtb     = 1;
-  pcb[ 0 ].prtc     = 0;
+  pcb[ 0 ].ctx.pc   = ( uint32_t )( &main_console );
+  pcb[ 0 ].ctx.sp   = ( uint32_t )( &tos_console  );
+  pcb[ 0 ].ctx.prtb = 1;
+  pcb[ 0 ].ctx.prtc = 0;
 
+  //initialise p3
   memset( &pcb[ 1 ], 0, sizeof( pcb_t ) );
-  pcb[ 1 ].pid      = 2;
+  pcb[ 1 ].pid      = 1;
   pcb[ 1 ].status   = STATUS_READY;
   pcb[ 1 ].ctx.cpsr = 0x50;
-  pcb[ 1 ].ctx.pc   = ( uint32_t )( &main_P4 );
-  pcb[ 1 ].ctx.sp   = ( uint32_t )( &tos_P4  );
+  pcb[ 1 ].ctx.pc   = ( uint32_t )( &main_P3 );
+  pcb[ 1 ].ctx.sp   = ( uint32_t )( &tos_P3  );
   pcb[ 1 ].prtb     = 1;
   pcb[ 1 ].prtc     = 0;
 
-  // memset( &pcb[ 2 ], 0, sizeof( pcb_t ) );
-  // pcb[ 2 ].pid      = 3;
-  // pcb[ 2 ].status   = STATUS_READY;
-  // pcb[ 2 ].ctx.cpsr = 0x50;
-  // pcb[ 2 ].ctx.pc   = ( uint32_t )( &main_P5 );
-  // pcb[ 2 ].ctx.sp   = ( uint32_t )( &tos_P5  );
-
+  //initialise p4
   memset( &pcb[ 2 ], 0, sizeof( pcb_t ) );
-  pcb[ 2 ].pid      = 3;
+  pcb[ 2 ].pid      = 2;
   pcb[ 2 ].status   = STATUS_READY;
   pcb[ 2 ].ctx.cpsr = 0x50;
-  pcb[ 2 ].ctx.pc   = ( uint32_t )( &main_console );
-  pcb[ 2 ].ctx.sp   = ( uint32_t )( &tos_console  );
+  pcb[ 2 ].ctx.pc   = ( uint32_t )( &main_P4 );
+  pcb[ 2 ].ctx.sp   = ( uint32_t )( &tos_P4  );
+  pcb[ 2 ].prtb     = 1;
+  pcb[ 2 ].prtc     = 0;
 
-  // memcpy( ctx, &pcb[ 0 ].ctx, sizeof( ctx_t ) );
-  // pcb[ 0 ].status = STATUS_EXECUTING;
+  //initialise p5
+  memset( &pcb[ 3 ], 0, sizeof( pcb_t ) );
+  pcb[ 3 ].pid      = 3;
+  pcb[ 3 ].status   = STATUS_READY;
+  pcb[ 3 ].ctx.cpsr = 0x50;
+  pcb[ 3 ].ctx.pc   = ( uint32_t )( &main_P5 );
+  pcb[ 3 ].ctx.sp   = ( uint32_t )( &tos_P5  );
 
-  memcpy( ctx, &pcb[ 2 ].ctx, sizeof( ctx_t ) );
-  pcb[ 2 ].status = STATUS_EXECUTING;
+  // execute console
+  memcpy( ctx, &pcb[ 0 ].ctx, sizeof( ctx_t ) );
+  pcb[ 0 ].status = STATUS_EXECUTING;
 
-  cid = 1;
-  nid = 1;
-  current = 0;
-  next = 0;
+  cid = 0;
+  nid = 0;
 
   //int_enable_irq();
 
@@ -149,7 +142,7 @@ void hilevel_handler_svc(ctx_t* ctx, uint32_t id) {
 
   switch( id ) {
     case 0x00 : { // 0x00 => yield()
-      //scheduler( ctx );
+      scheduler( ctx );
       break;
     }
 
@@ -166,15 +159,22 @@ void hilevel_handler_svc(ctx_t* ctx, uint32_t id) {
       break;
     }
 
-    case 0x03 : { //0x03 => fork( x )
+    case 0x03 : { //0x03 => fork()
+      // create new child process with unique PID,
+      // replicate state (e.g., address space) of parent in child,
+      // parent and child both return from fork, and continue to execute after the call point,
+      // return value is 0 for child, and PID of child for parent.
       break;
     }
-    case 0x04 : { //0x04 => exit( )
-      //clean pcb for p5
+    case 0x04 : { //0x04 => exit( x ), terminate process with status x
+      //clean pcb for process
       //call scheduler
       break;
     }
-    case 0x05 : { //0x05 => exec( )
+    case 0x05 : { //0x05 => exec( x ), start executing at address x
+      //replace current process image (e.g., text segment) with with new process image: effectively this means execute a new program,
+      //reset state (e.g., stack pointer); continue to execute at the entry point of new program,
+      //no return, since call point no longer exists
       break;
     }
 
