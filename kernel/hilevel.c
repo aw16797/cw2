@@ -6,7 +6,7 @@
  */
 
 #include "hilevel.h"
-#define pnum 2
+#define pnum 3
 #define ni (pnum-1)
 pcb_t pcb[ pnum ];
 int cid = 1;
@@ -16,11 +16,15 @@ int next = 0;
 
 extern void     main_P3();
 extern uint32_t tos_P3;
+
 extern void     main_P4();
 extern uint32_t tos_P4;
 
 // extern void     main_P5();
 // extern uint32_t tos_P5;
+
+extern void     main_console();
+extern uint32_t tos_console;
 
 pid_t findMaxPriority(){
   int maxP = pcb[0].prtc;
@@ -105,15 +109,25 @@ void hilevel_handler_rst(ctx_t* ctx) {
   // pcb[ 2 ].ctx.pc   = ( uint32_t )( &main_P5 );
   // pcb[ 2 ].ctx.sp   = ( uint32_t )( &tos_P5  );
 
-  memcpy( ctx, &pcb[ 0 ].ctx, sizeof( ctx_t ) );
-  pcb[ 0 ].status = STATUS_EXECUTING;
+  memset( &pcb[ 2 ], 0, sizeof( pcb_t ) );
+  pcb[ 2 ].pid      = 3;
+  pcb[ 2 ].status   = STATUS_READY;
+  pcb[ 2 ].ctx.cpsr = 0x50;
+  pcb[ 2 ].ctx.pc   = ( uint32_t )( &main_console );
+  pcb[ 2 ].ctx.sp   = ( uint32_t )( &tos_console  );
+
+  // memcpy( ctx, &pcb[ 0 ].ctx, sizeof( ctx_t ) );
+  // pcb[ 0 ].status = STATUS_EXECUTING;
+
+  memcpy( ctx, &pcb[ 2 ].ctx, sizeof( ctx_t ) );
+  pcb[ 2 ].status = STATUS_EXECUTING;
 
   cid = 1;
   nid = 1;
   current = 0;
   next = 0;
 
-  int_enable_irq();
+  //int_enable_irq();
 
   return;
 }
@@ -122,7 +136,8 @@ void hilevel_handler_irq(ctx_t* ctx) {
   uint32_t id = GICC0->IAR;
 
   if( id == GIC_SOURCE_TIMER0 ) {
-    scheduler( ctx ); TIMER0->Timer1IntClr = 0x01;
+    //scheduler( ctx );
+    TIMER0->Timer1IntClr = 0x01;
   }
 
   GICC0->EOIR = id;
@@ -134,7 +149,7 @@ void hilevel_handler_svc(ctx_t* ctx, uint32_t id) {
 
   switch( id ) {
     case 0x00 : { // 0x00 => yield()
-      scheduler( ctx );
+      //scheduler( ctx );
       break;
     }
 
@@ -150,10 +165,17 @@ void hilevel_handler_svc(ctx_t* ctx, uint32_t id) {
       ctx->gpr[ 0 ] = n;
       break;
     }
-    case 0x04 : {//0x04 => exit
-      //clean pcb for p5
 
+    case 0x03 : { //0x03 => fork( x )
+      break;
+    }
+    case 0x04 : { //0x04 => exit( )
+      //clean pcb for p5
       //call scheduler
+      break;
+    }
+    case 0x05 : { //0x05 => exec( )
+      break;
     }
 
     default   : { // 0x?? => unknown/unsupported
