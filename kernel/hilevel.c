@@ -11,6 +11,7 @@
 pcb_t pcb[ pnum ];
 int cid = 0;
 int nid = 0;
+int newpcb = 0;
 
 extern void     main_P3();
 extern uint32_t tos_P3;
@@ -23,6 +24,10 @@ extern uint32_t tos_P5;
 
 extern void     main_console();
 extern uint32_t tos_console;
+
+pid_t nextFreePCB(){
+
+}
 
 pid_t findMaxPriority(){
   pid_t maxP = pcb[0].prtc;
@@ -121,6 +126,7 @@ void hilevel_handler_rst(ctx_t* ctx) {
 
   cid = 0;
   nid = 0;
+  newpcb = 4;
 
   //int_enable_irq();
 
@@ -162,10 +168,16 @@ void hilevel_handler_svc(ctx_t* ctx, uint32_t id) {
     }
 
     case 0x03 : { //0x03 => fork()
-      // create new child process with unique PID,
+      // create new child process with unique PID
       // replicate state (e.g., address space) of parent in child,
       // parent and child both return from fork, and continue to execute after the call point,
       // return value is 0 for child, and PID of child for parent.
+      
+      if(newpcb < 10){ //if no space for new processes
+        newpcb++;
+      } else{
+        //do something about executing parent?
+      }
       break;
     }
     case 0x04 : { //0x04 => exit( x ), terminate process with status x
