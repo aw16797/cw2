@@ -31,7 +31,7 @@ extern uint32_t tos_8;
 extern uint32_t tos_9;
 extern uint32_t tos_10;
 
-uint32_t tosArray[] = {tos_console, tos_P3, tos_P4, tos_P5, tos_6, tos_7, tos_8, tos_9, tos_10};
+//uint32_t tosArray[] = {tos_console, tos_P3, tos_P4, tos_P5, tos_6, tos_7, tos_8, tos_9, tos_10};
 
 pid_t matchCTX(ctx_t* ctx){
   bool found = false;
