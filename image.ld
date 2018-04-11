@@ -22,6 +22,9 @@ SECTIONS {
   /* allocate stack for irq mode     */
   .       = . + 0x00001000;
   tos_irq = .;
+  /* allocate stack for console      */
+  .       = . + 0x00001000;
+  tos_console  = .;
   /* allocate stack for P3           */
   .       = . + 0x00001000;
   tos_P3  = .;
@@ -31,7 +34,14 @@ SECTIONS {
   /* allocate stack for P5           */
   .       = . + 0x00001000;
   tos_P5  = .;
-  /* allocate stack for console      */
   .       = . + 0x00001000;
-  tos_console  = .;
+  tos_6   = .;
+  .       = . + 0x00001000;
+  tos_7   = .;
+  .       = . + 0x00001000;
+  tos_8   = .;
+  .       = . + 0x00001000;
+  tos_9   = .;
+  .       = . + 0x00001000;
+  tos_10   = .;
 }

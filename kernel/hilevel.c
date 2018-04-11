@@ -25,8 +25,26 @@ extern uint32_t tos_P5;
 extern void     main_console();
 extern uint32_t tos_console;
 
-pid_t nextFreePCB(){
+extern uint32_t tos_6;
+extern uint32_t tos_7;
+extern uint32_t tos_8;
+extern uint32_t tos_9;
+extern uint32_t tos_10;
 
+uint32_t tosArray[] = {tos_console, tos_P3, tos_P4, tos_P5, tos_6, tos_7, tos_8, tos_9, tos_10};
+
+pid_t matchCTX(ctx_t* ctx){
+  bool found = false;
+  pid_t match;
+  int count = 0;
+  for (int i = 0; i > 4; i++){
+    if (pcb[i].ctx.pc == ctx.pc){
+      found = true;
+      match = pcb[i].pid;
+    }
+  }
+  if (found == true) return match;
+  else return -1;
 }
 
 pid_t findMaxPriority(){
@@ -51,20 +69,21 @@ void updatePriority(){
 
 void scheduler( ctx_t* ctx ) {
   //update nid with max prtc process
-  nid = findMaxPriority();
+  //nid = findMaxPriority();
+  nid = matchCTX(ctx);
 
   //preserve
-  memcpy( &pcb[ cid ].ctx, ctx, sizeof( ctx_t ) );
-  pcb[ cid ].status = STATUS_READY;
+  // memcpy( &pcb[ cid ].ctx, ctx, sizeof( ctx_t ) );
+  // pcb[ cid ].status = STATUS_READY;
+  //
+  // //restore
+  // memcpy( ctx, &pcb[ nid ].ctx, sizeof( ctx_t ) );
+  // pcb[ nid ].status = STATUS_EXECUTING;
 
-  //restore
-  memcpy( ctx, &pcb[ nid ].ctx, sizeof( ctx_t ) );
-  pcb[ nid ].status = STATUS_EXECUTING;
-
-  updatePriority();
+  //updatePriority();
 
   //update cid
-  cid = nid;
+  // cid = nid;
 
   return;
 }
@@ -89,7 +108,7 @@ void hilevel_handler_rst(ctx_t* ctx) {
   pcb[ 0 ].ctx.cpsr = 0x50;
   pcb[ 0 ].ctx.pc   = ( uint32_t )( &main_console );
   pcb[ 0 ].ctx.sp   = ( uint32_t )( &tos_console  );
-  pcb[ 0 ].prtb = 1;
+  pcb[ 0 ].prtb = 0;
   pcb[ 0 ].prtc = 0;
 
   //initialise p3
@@ -172,12 +191,30 @@ void hilevel_handler_svc(ctx_t* ctx, uint32_t id) {
       // replicate state (e.g., address space) of parent in child,
       // parent and child both return from fork, and continue to execute after the call point,
       // return value is 0 for child, and PID of child for parent.
-      
-      if(newpcb < 10){ //if no space for new processes
-        newpcb++;
-      } else{
-        //do something about executing parent?
-      }
+
+      scheduler(ctx);
+
+      // newtos = &tosArray[newpcb];
+      // //assign pcb for child
+      // memset( &pcb[ newpcb ], 0, sizeof( pcb_t ) );
+      // pcb[ newpcb ].pid      = newpcb;
+      // pcb[ newpcb ].status   = STATUS_READY;
+      // pcb[ newpcb ].ctx.cpsr = 0x50;
+      // pcb[ newpcb ].ctx.pc   = ( uint32_t )( pcb[cid].ctx.pc );
+      // pcb[ newpcb ].ctx.sp   = ( uint32_t )( newtos );
+      // pcb[ newpcb ].prtb     = pcb[cid].prtb;
+      // pcb[ newpcb ].prtc     = pcb[cid].prtc;
+      //
+      // memcpy( ctx, &pcb[ newpcb ].ctx, sizeof( ctx_t ) );
+      // pcb[ newpcb ].status = STATUS_EXECUTING;
+      //
+      // if(newpcb < 10){ //if space for new processes
+      //   newpcb++;
+      // } else{
+      //   PL011_putc( UART0, 'Y', true );
+      //   //cant make new process
+      //   //do something about executing parent?
+      // }
       break;
     }
     case 0x04 : { //0x04 => exit( x ), terminate process with status x
@@ -189,6 +226,20 @@ void hilevel_handler_svc(ctx_t* ctx, uint32_t id) {
       //replace current process image (e.g., text segment) with with new process image: effectively this means execute a new program,
       //reset state (e.g., stack pointer); continue to execute at the entry point of new program,
       //no return, since call point no longer exists
+
+      //preserve
+      memcpy( &pcb[ cid ].ctx, ctx, sizeof( ctx_t ) );
+      pcb[ cid ].status = STATUS_READY;
+
+      //restore
+      memcpy( ctx, &pcb[ nid ].ctx, sizeof( ctx_t ) );
+      pcb[ nid ].status = STATUS_EXECUTING;
+
+      cid = nid;
+
+      break;
+    }
+    case 0x06 : { //0x06 => kill( pid, x ),
       break;
     }
 
