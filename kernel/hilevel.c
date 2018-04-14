@@ -192,7 +192,7 @@ void hilevel_handler_svc(ctx_t* ctx, uint32_t id) {
       // parent and child both return from fork, and continue to execute after the call point,
       // return value is 0 for child, and PID of child for parent.
 
-      newtos = tosArray[newpcb];
+      uint32_t newtos = tosArray[newpcb];
       //assign pcb for child
       memset( &pcb[ newpcb ], 0, sizeof( pcb_t ) );
       pcb[ newpcb ].pid      = newpcb;
