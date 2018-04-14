@@ -38,7 +38,7 @@ pid_t matchCTX(ctx_t* ctx){
   pid_t match;
   int count = 0;
   for (int i = 0; i > 4; i++){
-    if ( (pcb[i].ctx.cpsr) == (ctx->cpsr) ){
+    if ( (pcb[i].ctx.pc) == (ctx->pc) ){
       found = true;
       match = pcb[i].pid;
     }
@@ -71,19 +71,19 @@ void scheduler( ctx_t* ctx ) {
   //update nid with max prtc process
   //nid = findMaxPriority();
   nid = matchCTX(ctx);
+  if (nid == -1) PL011_putc( UART0, 'Q', true );
 
-  //preserve
-  // memcpy( &pcb[ cid ].ctx, ctx, sizeof( ctx_t ) );
-  // pcb[ cid ].status = STATUS_READY;
-  //
-  // //restore
-  // memcpy( ctx, &pcb[ nid ].ctx, sizeof( ctx_t ) );
-  // pcb[ nid ].status = STATUS_EXECUTING;
+  preserve
+  memcpy( &pcb[ cid ].ctx, ctx, sizeof( ctx_t ) );
+  pcb[ cid ].status = STATUS_READY;
+
+  //restore
+  memcpy( ctx, &pcb[ nid ].ctx, sizeof( ctx_t ) );
+  pcb[ nid ].status = STATUS_EXECUTING;
+
+  cid = nid;
 
   //updatePriority();
-
-  //update cid
-  // cid = nid;
 
   return;
 }
@@ -147,7 +147,7 @@ void hilevel_handler_rst(ctx_t* ctx) {
   nid = 0;
   newpcb = 4;
 
-  //int_enable_irq();
+  int_enable_irq();
 
   return;
 }
@@ -156,7 +156,7 @@ void hilevel_handler_irq(ctx_t* ctx) {
   uint32_t id = GICC0->IAR;
 
   if( id == GIC_SOURCE_TIMER0 ) {
-    //scheduler( ctx );
+    scheduler( ctx );
     TIMER0->Timer1IntClr = 0x01;
   }
 
@@ -192,50 +192,52 @@ void hilevel_handler_svc(ctx_t* ctx, uint32_t id) {
       // parent and child both return from fork, and continue to execute after the call point,
       // return value is 0 for child, and PID of child for parent.
 
-      scheduler(ctx);
+      newtos = &tosArray[newpcb];
+      //assign pcb for child
+      memset( &pcb[ newpcb ], 0, sizeof( pcb_t ) );
+      pcb[ newpcb ].pid      = newpcb;
+      pcb[ newpcb ].status   = STATUS_READY;
+      pcb[ newpcb ].ctx.cpsr = 0x50;
+      pcb[ newpcb ].ctx.pc   = ( uint32_t )( pcb[cid].ctx.pc );
+      pcb[ newpcb ].ctx.sp   = ( uint32_t )( newtos );
 
-      // newtos = &tosArray[newpcb];
-      // //assign pcb for child
-      // memset( &pcb[ newpcb ], 0, sizeof( pcb_t ) );
-      // pcb[ newpcb ].pid      = newpcb;
-      // pcb[ newpcb ].status   = STATUS_READY;
-      // pcb[ newpcb ].ctx.cpsr = 0x50;
-      // pcb[ newpcb ].ctx.pc   = ( uint32_t )( pcb[cid].ctx.pc );
-      // pcb[ newpcb ].ctx.sp   = ( uint32_t )( newtos );
-      // pcb[ newpcb ].prtb     = pcb[cid].prtb;
-      // pcb[ newpcb ].prtc     = pcb[cid].prtc;
-      //
       // memcpy( ctx, &pcb[ newpcb ].ctx, sizeof( ctx_t ) );
       // pcb[ newpcb ].status = STATUS_EXECUTING;
-      //
-      // if(newpcb < 10){ //if space for new processes
-      //   newpcb++;
-      // } else{
-      //   PL011_putc( UART0, 'Y', true );
-      //   //cant make new process
-      //   //do something about executing parent?
-      // }
+
+      if(newpcb < 10){ //if space for new processes
+        newpcb++;
+      } else{
+        PL011_putc( UART0, 'Y', true );
+        //cant make new process
+        //do something about executing parent?
+      }
       break;
     }
     case 0x04 : { //0x04 => exit( x ), terminate process with status x
       //clean pcb for process
       //call scheduler
+      pcb[ cid ].status = STATUS_TERMINATED
+
       break;
     }
     case 0x05 : { //0x05 => exec( x ), start executing at address x
       //replace current process image (e.g., text segment) with with new process image: effectively this means execute a new program,
       //reset state (e.g., stack pointer); continue to execute at the entry point of new program,
       //no return, since call point no longer exists
-
-      //preserve
-      memcpy( &pcb[ cid ].ctx, ctx, sizeof( ctx_t ) );
-      pcb[ cid ].status = STATUS_READY;
-
-      //restore
-      memcpy( ctx, &pcb[ nid ].ctx, sizeof( ctx_t ) );
-      pcb[ nid ].status = STATUS_EXECUTING;
-
-      cid = nid;
+      scheduler(ctx)
+      // nid = matchCTX(ctx)
+      // if(nid == -1){
+      //   PL011_putc( UART0, 'Y', true );
+      // }
+      // //preserve
+      // memcpy( &pcb[ cid ].ctx, ctx, sizeof( ctx_t ) );
+      // pcb[ cid ].status = STATUS_READY;
+      //
+      // //restore
+      // memcpy( ctx, &pcb[ nid ].ctx, sizeof( ctx_t ) );
+      // pcb[ nid ].status = STATUS_EXECUTING;
+      //
+      // cid = nid;
 
       break;
     }
