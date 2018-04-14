@@ -31,7 +31,7 @@ extern uint32_t tos_8;
 extern uint32_t tos_9;
 extern uint32_t tos_10;
 
-uint32_t tosArray[] = {tos_console, tos_P3, tos_P4, tos_P5, tos_6, tos_7, tos_8, tos_9, tos_10};
+uint32_t tosArray[] = {&tos_console, &tos_P3, &tos_P4, &tos_P5, &tos_6, &tos_7, &tos_8, &tos_9, &tos_10};
 
 pid_t matchCTX(ctx_t* ctx){
   bool found = false;
@@ -192,7 +192,7 @@ void hilevel_handler_svc(ctx_t* ctx, uint32_t id) {
       // parent and child both return from fork, and continue to execute after the call point,
       // return value is 0 for child, and PID of child for parent.
 
-      newtos = &tosArray[newpcb];
+      newtos = tosArray[newpcb];
       //assign pcb for child
       memset( &pcb[ newpcb ], 0, sizeof( pcb_t ) );
       pcb[ newpcb ].pid      = newpcb;
