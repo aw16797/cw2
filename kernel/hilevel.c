@@ -31,7 +31,7 @@ extern uint32_t tos_8;
 extern uint32_t tos_9;
 extern uint32_t tos_10;
 
-//uint32_t tosArray[] = {tos_console, tos_P3, tos_P4, tos_P5, tos_6, tos_7, tos_8, tos_9, tos_10};
+uint32_t tosArray[] = {tos_console, tos_P3, tos_P4, tos_P5, tos_6, tos_7, tos_8, tos_9, tos_10};
 
 pid_t matchCTX(ctx_t* ctx){
   bool found = false;
@@ -73,7 +73,7 @@ void scheduler( ctx_t* ctx ) {
   nid = matchCTX(ctx);
   if (nid == -1) PL011_putc( UART0, 'Q', true );
 
-  preserve
+  //preserve
   memcpy( &pcb[ cid ].ctx, ctx, sizeof( ctx_t ) );
   pcb[ cid ].status = STATUS_READY;
 
@@ -216,7 +216,7 @@ void hilevel_handler_svc(ctx_t* ctx, uint32_t id) {
     case 0x04 : { //0x04 => exit( x ), terminate process with status x
       //clean pcb for process
       //call scheduler
-      pcb[ cid ].status = STATUS_TERMINATED
+      pcb[ cid ].status = STATUS_TERMINATED;
 
       break;
     }
@@ -224,7 +224,7 @@ void hilevel_handler_svc(ctx_t* ctx, uint32_t id) {
       //replace current process image (e.g., text segment) with with new process image: effectively this means execute a new program,
       //reset state (e.g., stack pointer); continue to execute at the entry point of new program,
       //no return, since call point no longer exists
-      scheduler(ctx)
+      scheduler(ctx);
       // nid = matchCTX(ctx)
       // if(nid == -1){
       //   PL011_putc( UART0, 'Y', true );
