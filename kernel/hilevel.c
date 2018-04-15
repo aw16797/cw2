@@ -210,7 +210,7 @@ void hilevel_handler_svc(ctx_t* ctx, uint32_t id) {
       pcb[ newpcb ].ctx.pc   = ( uint32_t )( ctx->pc );
       pcb[ newpcb ].ctx.sp   = ( uint32_t )( newtos );
 
-      nid = newpcb;
+  
       // memcpy( ctx, &pcb[ newpcb ].ctx, sizeof( ctx_t ) );
       // pcb[ newpcb ].status = STATUS_EXECUTING;
 
