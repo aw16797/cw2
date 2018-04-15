@@ -227,7 +227,7 @@ void hilevel_handler_svc(ctx_t* ctx, uint32_t id) {
       //no return, since call point no longer exists
       //scheduler(ctx);
       nid = matchCTX(ctx);
-
+      if(nid == -1) PL011_putc( UART0, 'Y', true );
       // nid = matchCTX(ctx)
       // if(nid == -1){
       //   PL011_putc( UART0, 'Y', true );
