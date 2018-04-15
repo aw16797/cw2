@@ -80,7 +80,7 @@ void scheduler( ctx_t* ctx ) {
   //nid = findMaxPriority();
   // nid = matchCTX(ctx);
   // if (nid == -1) PL011_putc( UART0, 'Q', true );
-
+  PL011_putc( UART0, 'S', true );
   //preserve
   memcpy( &pcb[ cid ].ctx, ctx, sizeof( ctx_t ) );
   pcb[ cid ].status = STATUS_READY;
@@ -200,6 +200,8 @@ void hilevel_handler_svc(ctx_t* ctx, uint32_t id) {
       // replicate state (e.g., address space) of parent in child,
       // parent and child both return from fork, and continue to execute after the call point,
       // return value is 0 for child, and PID of child for parent.
+      PL011_putc( UART0, 'F', true );
+
       newpcb++;
       uint32_t newtos = tosArray[newpcb];
       //assign pcb for child
@@ -232,6 +234,7 @@ void hilevel_handler_svc(ctx_t* ctx, uint32_t id) {
       //replace current process image (e.g., text segment) with with new process image: effectively this means execute a new program,
       //reset state (e.g., stack pointer); continue to execute at the entry point of new program,
       //no return, since call point no longer exists
+      PL011_putc( UART0, 'e', true );
 
       uint32_t x = ctx->gpr[0];
       pcb[ newpcb ].ctx.pc = x;
