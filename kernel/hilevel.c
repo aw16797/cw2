@@ -210,13 +210,14 @@ void hilevel_handler_svc(ctx_t* ctx, uint32_t id) {
       pcb[ newpcb ].ctx.pc   = ( uint32_t )( pcb[cid].ctx.pc );
       pcb[ newpcb ].ctx.sp   = ( uint32_t )( newtos );
 
+
       // memcpy( ctx, &pcb[ newpcb ].ctx, sizeof( ctx_t ) );
       // pcb[ newpcb ].status = STATUS_EXECUTING;
 
       if(newpcb < 10){ //if space for new processes
         newpcb++;
       } else{
-        PL011_putc( UART0, 'Y', true );
+        PL011_putc( UART0, 'K', true );
         //cant make new process
         //do something about executing parent?
       }
@@ -234,8 +235,11 @@ void hilevel_handler_svc(ctx_t* ctx, uint32_t id) {
       //reset state (e.g., stack pointer); continue to execute at the entry point of new program,
       //no return, since call point no longer exists
       //scheduler(ctx);
-      nid = matchCTX(ctx);
-      // nid = matchCTX(ctx)
+
+      uint32_t x = (uint32_t)ctx->gpr[0];
+      ctx->pc = x;
+
+      //nid = matchCTX(ctx);
       // if(nid == -1){
       //   PL011_putc( UART0, 'Y', true );
       // }
