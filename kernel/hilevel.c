@@ -210,7 +210,7 @@ void hilevel_handler_svc(ctx_t* ctx, uint32_t id) {
       pcb[ newpcb ].ctx.pc   = ( uint32_t )( pcb[cid].ctx.pc );
       pcb[ newpcb ].ctx.sp   = ( uint32_t )( newtos );
 
-
+      nid = newpcb;
       // memcpy( ctx, &pcb[ newpcb ].ctx, sizeof( ctx_t ) );
       // pcb[ newpcb ].status = STATUS_EXECUTING;
 
@@ -234,7 +234,6 @@ void hilevel_handler_svc(ctx_t* ctx, uint32_t id) {
       //replace current process image (e.g., text segment) with with new process image: effectively this means execute a new program,
       //reset state (e.g., stack pointer); continue to execute at the entry point of new program,
       //no return, since call point no longer exists
-      //scheduler(ctx);
 
       uint32_t x = (uint32_t)ctx->gpr[0];
       ctx->pc = x;
