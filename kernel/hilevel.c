@@ -210,7 +210,7 @@ void hilevel_handler_svc(ctx_t* ctx, uint32_t id) {
       pcb[ newpcb ].ctx.pc   = ( uint32_t )( ctx->pc );
       pcb[ newpcb ].ctx.sp   = ( uint32_t )( newtos );
 
-  
+
       // memcpy( ctx, &pcb[ newpcb ].ctx, sizeof( ctx_t ) );
       // pcb[ newpcb ].status = STATUS_EXECUTING;
 
@@ -235,7 +235,7 @@ void hilevel_handler_svc(ctx_t* ctx, uint32_t id) {
       //reset state (e.g., stack pointer); continue to execute at the entry point of new program,
       //no return, since call point no longer exists
 
-      uint32_t x = (uint32_t)ctx->gpr[0];
+      uint32_t x = ctx->gpr[0];
       ctx->pc = x;
 
       //nid = matchCTX(ctx);
