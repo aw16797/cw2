@@ -207,7 +207,7 @@ void hilevel_handler_svc(ctx_t* ctx, uint32_t id) {
       pcb[ newpcb ].pid      = newpcb;
       pcb[ newpcb ].status   = STATUS_READY;
       pcb[ newpcb ].ctx.cpsr = 0x50;
-      pcb[ newpcb ].ctx.pc   = ( uint32_t )( pcb[cid].ctx.pc );
+      pcb[ newpcb ].ctx.pc   = ( uint32_t )( ctx.pc );
       pcb[ newpcb ].ctx.sp   = ( uint32_t )( newtos );
 
       nid = newpcb;
