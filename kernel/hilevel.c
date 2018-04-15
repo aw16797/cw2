@@ -37,13 +37,14 @@ pid_t matchCTX(ctx_t* ctx){
   bool found = false;
   pid_t match;
   int count = 0;
-  for (int i = 0; i > 4; i++){
-    if ( (pcb[i].ctx.pc) == (ctx->pc) ){
+  for (int i = 0; i < 5; i++){
+    ctx_t* ctxc = &pcb[i].ctx.pc;
+    if ( (ctxc->pc) == (ctx->pc) ){
       found = true;
       match = pcb[i].pid;
     }
   }
-  if (found == true) return match;
+  if (found) return match;
   else return -1;
 }
 
