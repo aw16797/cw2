@@ -219,7 +219,6 @@ void hilevel_handler_svc(ctx_t* ctx, uint32_t id) {
       //   PL011_putc( UART0, 'K', true );
         //cant make new process
         //do something about executing parent?
-      }
       break;
     }
     case 0x04 : { //0x04 => exit( x ), terminate process with status x
