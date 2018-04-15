@@ -153,7 +153,7 @@ void hilevel_handler_rst(ctx_t* ctx) {
 
   cid = 0;
   nid = 0;
-  newpcb = 4;
+  newpcb = 3;
 
   int_enable_irq();
 
@@ -200,7 +200,7 @@ void hilevel_handler_svc(ctx_t* ctx, uint32_t id) {
       // replicate state (e.g., address space) of parent in child,
       // parent and child both return from fork, and continue to execute after the call point,
       // return value is 0 for child, and PID of child for parent.
-
+      newpcb++;
       uint32_t newtos = tosArray[newpcb];
       //assign pcb for child
       memset( &pcb[ newpcb ], 0, sizeof( pcb_t ) );
@@ -210,14 +210,13 @@ void hilevel_handler_svc(ctx_t* ctx, uint32_t id) {
       pcb[ newpcb ].ctx.pc   = ( uint32_t )( ctx->pc );
       pcb[ newpcb ].ctx.sp   = ( uint32_t )( newtos );
 
-
       // memcpy( ctx, &pcb[ newpcb ].ctx, sizeof( ctx_t ) );
       // pcb[ newpcb ].status = STATUS_EXECUTING;
 
-      if(newpcb < 10){ //if space for new processes
-        newpcb++;
-      } else{
-        PL011_putc( UART0, 'K', true );
+      // if(newpcb < 10){ //if space for new processes
+      //   newpcb++;
+      // } else{
+      //   PL011_putc( UART0, 'K', true );
         //cant make new process
         //do something about executing parent?
       }
@@ -236,7 +235,8 @@ void hilevel_handler_svc(ctx_t* ctx, uint32_t id) {
       //no return, since call point no longer exists
 
       uint32_t x = ctx->gpr[0];
-      ctx->pc = x;
+      pcb[ newpcb ].ctx.pc = x;
+      nid = newpcb;
 
       //nid = matchCTX(ctx);
       // if(nid == -1){
