@@ -70,8 +70,8 @@ void updatePriority(){
 void scheduler( ctx_t* ctx ) {
   //update nid with max prtc process
   //nid = findMaxPriority();
-  nid = matchCTX(ctx);
-  if (nid == -1) PL011_putc( UART0, 'Q', true );
+  // nid = matchCTX(ctx);
+  // if (nid == -1) PL011_putc( UART0, 'Q', true );
 
   //preserve
   memcpy( &pcb[ cid ].ctx, ctx, sizeof( ctx_t ) );
@@ -156,8 +156,9 @@ void hilevel_handler_irq(ctx_t* ctx) {
   uint32_t id = GICC0->IAR;
 
   if( id == GIC_SOURCE_TIMER0 ) {
-    scheduler( ctx );
+    scheduler(ctx);
     TIMER0->Timer1IntClr = 0x01;
+
   }
 
   GICC0->EOIR = id;
@@ -224,7 +225,9 @@ void hilevel_handler_svc(ctx_t* ctx, uint32_t id) {
       //replace current process image (e.g., text segment) with with new process image: effectively this means execute a new program,
       //reset state (e.g., stack pointer); continue to execute at the entry point of new program,
       //no return, since call point no longer exists
-      scheduler(ctx);
+      //scheduler(ctx);
+      nid = matchCTX(ctx);
+
       // nid = matchCTX(ctx)
       // if(nid == -1){
       //   PL011_putc( UART0, 'Y', true );
