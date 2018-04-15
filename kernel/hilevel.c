@@ -34,12 +34,13 @@ extern uint32_t tos_10;
 uint32_t tosArray[] = {&tos_console, &tos_P3, &tos_P4, &tos_P5, &tos_6, &tos_7, &tos_8, &tos_9, &tos_10};
 
 pid_t matchCTX(ctx_t* ctx){
+  uint32_t context = *ctx->pc
   bool found = false;
   pid_t match;
-  int count = 0;
+
   for (int i = 0; i < 5; i++){
-    ctx_t* ctxc = &pcb[i].ctx.pc;
-    if ( (ctxc->pc) == (ctx->pc) ){
+    ctx_t ctxc = pcb[i].ctx.pc;
+    if ( (ctxc) == (context) ){
       found = true;
       match = pcb[i].pid;
     }
