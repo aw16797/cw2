@@ -45,8 +45,14 @@ pid_t matchCTX(ctx_t* ctx){
       match = pcb[i].pid;
     }
   }
-  if (found) return match;
-  else return -1;
+  if (found){
+    PL011_putc( UART0, 'Y', true );
+    return match;
+  }
+  else{
+    PL011_putc( UART0, 'N', true );
+    return -1;
+  }
 }
 
 pid_t findMaxPriority(){
@@ -229,7 +235,6 @@ void hilevel_handler_svc(ctx_t* ctx, uint32_t id) {
       //no return, since call point no longer exists
       //scheduler(ctx);
       nid = matchCTX(ctx);
-      if(nid == -1) PL011_putc( UART0, 'Y', true );
       // nid = matchCTX(ctx)
       // if(nid == -1){
       //   PL011_putc( UART0, 'Y', true );
