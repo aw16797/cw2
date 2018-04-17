@@ -19,10 +19,18 @@ queue q = {
 }
 int qpoint = 0;
 
-int peek() {return q.array[front];}
-bool isEmpty() {return q.itemcount==0;}
-bool isFull() {return q.itemcount==pnum;}
-int size() {return q.itemcount;}
+int peek() {
+  return (q.array[q.front]);
+}
+bool isEmpty() {
+  return (q.itemcount==0);
+}
+bool isFull() {
+  return (q.itemcount==pnum);
+}
+int size() {
+  return (q.itemcount);
+}
 void insert(int data) {
    if(!isFull()) {
       if(q.rear == pnum-1) {q.rear = -1;}
