@@ -12,6 +12,31 @@ pcb_t pcb[ pnum ];
 int cid = 0;
 int nid = 0;
 int newpcb = 0;
+queue q = {
+  front = 0;
+  rear = -1;
+  itemcount = 0;
+}
+int qpoint = 0;
+
+int peek() {return q.array[front];}
+bool isEmpty() {return q.itemcount==0;}
+bool isFull() {return q.itemcount==pnum;}
+int size() {return q.itemcount;}
+void insert(int data) {
+   if(!isFull()) {
+      if(q.rear == pnum-1) {q.rear = -1;}
+      q.array[++q.rear] = data;
+      q.itemcount++;
+   }
+}
+int removeData() {
+   int data = q.array[q.front++];
+   if(q.front == pnum) {q.front = 0;}
+   q.itemcount--;
+   return data;
+}
+
 
 extern void     main_P3();
 extern uint32_t tos_P3;
@@ -81,6 +106,7 @@ void scheduler( ctx_t* ctx ) {
   // nid = matchCTX(ctx);
   // if (nid == -1) PL011_putc( UART0, 'Q', true );
   PL011_putc( UART0, 'S', true );
+
   //preserve
   memcpy( &pcb[ cid ].ctx, ctx, sizeof( ctx_t ) );
   pcb[ cid ].status = STATUS_READY;
@@ -119,33 +145,33 @@ void hilevel_handler_rst(ctx_t* ctx) {
   pcb[ 0 ].prtb = 0;
   pcb[ 0 ].prtc = 0;
 
-  //initialise p3
-  memset( &pcb[ 1 ], 0, sizeof( pcb_t ) );
-  pcb[ 1 ].pid      = 1;
-  pcb[ 1 ].status   = STATUS_READY;
-  pcb[ 1 ].ctx.cpsr = 0x50;
-  pcb[ 1 ].ctx.pc   = ( uint32_t )( &main_P3 );
-  pcb[ 1 ].ctx.sp   = ( uint32_t )( &tos_P3  );
-  pcb[ 1 ].prtb     = 1;
-  pcb[ 1 ].prtc     = 0;
-
-  //initialise p4
-  memset( &pcb[ 2 ], 0, sizeof( pcb_t ) );
-  pcb[ 2 ].pid      = 2;
-  pcb[ 2 ].status   = STATUS_READY;
-  pcb[ 2 ].ctx.cpsr = 0x50;
-  pcb[ 2 ].ctx.pc   = ( uint32_t )( &main_P4 );
-  pcb[ 2 ].ctx.sp   = ( uint32_t )( &tos_P4  );
-  pcb[ 2 ].prtb     = 1;
-  pcb[ 2 ].prtc     = 0;
-
-  //initialise p5
-  memset( &pcb[ 3 ], 0, sizeof( pcb_t ) );
-  pcb[ 3 ].pid      = 3;
-  pcb[ 3 ].status   = STATUS_READY;
-  pcb[ 3 ].ctx.cpsr = 0x50;
-  pcb[ 3 ].ctx.pc   = ( uint32_t )( &main_P5 );
-  pcb[ 3 ].ctx.sp   = ( uint32_t )( &tos_P5  );
+  // //initialise p3
+  // memset( &pcb[ 1 ], 0, sizeof( pcb_t ) );
+  // pcb[ 1 ].pid      = 1;
+  // pcb[ 1 ].status   = STATUS_READY;
+  // pcb[ 1 ].ctx.cpsr = 0x50;
+  // pcb[ 1 ].ctx.pc   = ( uint32_t )( &main_P3 );
+  // pcb[ 1 ].ctx.sp   = ( uint32_t )( &tos_P3  );
+  // pcb[ 1 ].prtb     = 1;
+  // pcb[ 1 ].prtc     = 0;
+  //
+  // //initialise p4
+  // memset( &pcb[ 2 ], 0, sizeof( pcb_t ) );
+  // pcb[ 2 ].pid      = 2;
+  // pcb[ 2 ].status   = STATUS_READY;
+  // pcb[ 2 ].ctx.cpsr = 0x50;
+  // pcb[ 2 ].ctx.pc   = ( uint32_t )( &main_P4 );
+  // pcb[ 2 ].ctx.sp   = ( uint32_t )( &tos_P4  );
+  // pcb[ 2 ].prtb     = 1;
+  // pcb[ 2 ].prtc     = 0;
+  //
+  // //initialise p5
+  // memset( &pcb[ 3 ], 0, sizeof( pcb_t ) );
+  // pcb[ 3 ].pid      = 3;
+  // pcb[ 3 ].status   = STATUS_READY;
+  // pcb[ 3 ].ctx.cpsr = 0x50;
+  // pcb[ 3 ].ctx.pc   = ( uint32_t )( &main_P5 );
+  // pcb[ 3 ].ctx.sp   = ( uint32_t )( &tos_P5  );
 
   // execute console
   memcpy( ctx, &pcb[ 0 ].ctx, sizeof( ctx_t ) );
@@ -153,7 +179,7 @@ void hilevel_handler_rst(ctx_t* ctx) {
 
   cid = 0;
   nid = 0;
-  newpcb = 3;
+  newpcb = 0;
 
   int_enable_irq();
 
@@ -234,11 +260,13 @@ void hilevel_handler_svc(ctx_t* ctx, uint32_t id) {
       //replace current process image (e.g., text segment) with with new process image: effectively this means execute a new program,
       //reset state (e.g., stack pointer); continue to execute at the entry point of new program,
       //no return, since call point no longer exists
-      PL011_putc( UART0, 'e', true );
+      PL011_putc( UART0, 'E', true );
 
       uint32_t x = ctx->gpr[0];
       pcb[ newpcb ].ctx.pc = x;
+
       nid = newpcb;
+      insert(newpcb);
 
       //nid = matchCTX(ctx);
       // if(nid == -1){

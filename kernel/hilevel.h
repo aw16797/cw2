@@ -36,6 +36,13 @@ typedef enum {
   STATUS_TERMINATED
 } status_t;
 
+typedef struct{
+  int array[10];
+  int front;
+  int rear;
+  int itemcount;
+} queue;
+
 typedef struct {
   uint32_t cpsr, pc, gpr[ 13 ], sp, lr;
 } ctx_t;
