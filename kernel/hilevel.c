@@ -13,9 +13,6 @@ int cid = 0;
 int nid = 0;
 int newpcb = 0;
 queue_t Q;
-Q.front = 0;
-Q.rear = -1;
-Q.itemcount = 0;
 int qpoint = 0;
 
 int peek() {
@@ -187,6 +184,10 @@ void hilevel_handler_rst(ctx_t* ctx) {
   // execute console
   memcpy( ctx, &pcb[ 0 ].ctx, sizeof( ctx_t ) );
   pcb[ 0 ].status = STATUS_EXECUTING;
+
+  Q.front = 0;
+  Q.rear = -1;
+  Q.itemcount = 0;
 
   cid = 0;
   nid = 0;
