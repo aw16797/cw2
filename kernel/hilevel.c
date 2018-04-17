@@ -115,6 +115,8 @@ void scheduler( ctx_t* ctx ) {
   // if (nid == -1) PL011_putc( UART0, 'Q', true );
   PL011_putc( UART0, 'S', true );
 
+  pid_t nid = removeData();
+
   //preserve
   memcpy( &pcb[ cid ].ctx, ctx, sizeof( ctx_t ) );
   pcb[ cid ].status = STATUS_READY;
@@ -250,6 +252,8 @@ void hilevel_handler_svc(ctx_t* ctx, uint32_t id) {
       pcb[ newpcb ].ctx.pc   = ( uint32_t )( ctx->pc );
       pcb[ newpcb ].ctx.sp   = ( uint32_t )( newtos );
 
+
+
       // memcpy( ctx, &pcb[ newpcb ].ctx, sizeof( ctx_t ) );
       // pcb[ newpcb ].status = STATUS_EXECUTING;
 
@@ -274,10 +278,9 @@ void hilevel_handler_svc(ctx_t* ctx, uint32_t id) {
       //no return, since call point no longer exists
       PL011_putc( UART0, 'E', true );
 
-      uint32_t x = ctx->gpr[0];
+      uint32_t x = (uint32_t)ctx->gpr[0];
       pcb[ newpcb ].ctx.pc = x;
 
-      nid = newpcb;
       insert(newpcb);
 
       //nid = matchCTX(ctx);
