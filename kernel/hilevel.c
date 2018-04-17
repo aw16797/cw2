@@ -12,35 +12,39 @@ pcb_t pcb[ pnum ];
 int cid = 0;
 int nid = 0;
 int newpcb = 0;
-queue_t q;
-q.front = 0;
-q.rear = -1;
-q.itemcount = 0;
+queue_t Q;
+Q.front = 0;
+Q.rear = -1;
+Q.itemcount = 0;
 int qpoint = 0;
 
 int peek() {
-  return (q.array[q.front]);
+  return (Q.array[Q.front]);
 }
 bool isEmpty() {
-  return (q.itemcount==0);
+  return (Q.itemcount==0);
 }
 bool isFull() {
-  return (q.itemcount==pnum);
+  return (Q.itemcount==pnum);
 }
 int size() {
-  return (q.itemcount);
+  return (Q.itemcount);
 }
 void insert(int data) {
    if(!isFull()) {
-      if(q.rear == pnum-1) {q.rear = -1;}
-      q.array[++q.rear] = data;
-      q.itemcount++;
+      if (Q.rear == pnum-1) {
+        Q.rear = -1;
+      }
+      Q.array[++Q.rear] = data;
+      Q.itemcount++;
    }
 }
 int removeData() {
-   int data = q.array[q.front++];
-   if(q.front == pnum) {q.front = 0;}
-   q.itemcount--;
+   int data = Q.array[Q.front++];
+   if (Q.front == pnum) {
+     Q.front = 0;
+   }
+   Q.itemcount--;
    return data;
 }
 
