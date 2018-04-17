@@ -28,6 +28,9 @@ int size() {
   return (Q.itemcount);
 }
 void insert(int data) {
+   PL011_putc( UART0, ' ', true );
+   PL011_putc( UART0, 'I', true );
+   PL011_putc( UART0, ' ', true );
    if(!isFull()) {
       if (Q.rear == pnum-1) {
         Q.rear = -1;
@@ -37,6 +40,9 @@ void insert(int data) {
    }
 }
 int removeData() {
+   PL011_putc( UART0, ' ', true );
+   PL011_putc( UART0, 'R', true );
+   PL011_putc( UART0, ' ', true );
    int data = Q.array[Q.front++];
    if (Q.front == pnum) {
      Q.front = 0;
@@ -113,7 +119,9 @@ void scheduler( ctx_t* ctx ) {
   //nid = findMaxPriority();
   // nid = matchCTX(ctx);
   // if (nid == -1) PL011_putc( UART0, 'Q', true );
+  PL011_putc( UART0, ' ', true );
   PL011_putc( UART0, 'S', true );
+  PL011_putc( UART0, ' ', true );
 
   pid_t nid = removeData();
 
@@ -240,8 +248,9 @@ void hilevel_handler_svc(ctx_t* ctx, uint32_t id) {
       // replicate state (e.g., address space) of parent in child,
       // parent and child both return from fork, and continue to execute after the call point,
       // return value is 0 for child, and PID of child for parent.
+      PL011_putc( UART0, ' ', true );
       PL011_putc( UART0, 'F', true );
-
+      PL011_putc( UART0, ' ', true );
       newpcb++;
       uint32_t newtos = tosArray[newpcb];
       //assign pcb for child
@@ -276,7 +285,9 @@ void hilevel_handler_svc(ctx_t* ctx, uint32_t id) {
       //replace current process image (e.g., text segment) with with new process image: effectively this means execute a new program,
       //reset state (e.g., stack pointer); continue to execute at the entry point of new program,
       //no return, since call point no longer exists
+      PL011_putc( UART0, ' ', true );
       PL011_putc( UART0, 'E', true );
+      PL011_putc( UART0, ' ', true );
 
       uint32_t x = (uint32_t)ctx->gpr[0];
       pcb[ newpcb ].ctx.pc = x;
