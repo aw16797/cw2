@@ -43,17 +43,11 @@ int removeData() {
    PL011_putc( UART0, ' ', true );
    PL011_putc( UART0, 'R', true );
    PL011_putc( UART0, ' ', true );
-   int data;
-   if (Q.front == Q.rear) {
-     data = Q.array[Q.front];
-   } else {
-     int data = Q.array[Q.front++];
-     if (Q.front == pnum) {
-       Q.front = 0;
-     }
-     Q.itemcount--;
+   int data = Q.array[Q.front++];
+   if (Q.front == pnum) {
+     Q.front = 0;
    }
-
+   Q.itemcount--;
    return data;
 }
 
@@ -128,22 +122,19 @@ void scheduler( ctx_t* ctx ) {
   PL011_putc( UART0, ' ', true );
   PL011_putc( UART0, 'S', true );
   PL011_putc( UART0, ' ', true );
+  if (isEmpty()) {
+    PL011_putc( UART0, 'Y', true );
+  } else {
+    pid_t nid = removeData();
+    //preserve
+    memcpy( &pcb[ cid ].ctx, ctx, sizeof( ctx_t ) );
+    pcb[ cid ].status = STATUS_READY;
+    //restore
+    memcpy( ctx, &pcb[ nid ].ctx, sizeof( ctx_t ) );
+    pcb[ nid ].status = STATUS_EXECUTING;
 
-  pid_t nid = removeData();
-  char r = itoa(r,nid);
-  PL011_putc( UART0, ' ', true );
-  PL011_putc( UART0, r, true );
-  PL011_putc( UART0, ' ', true );
-
-  //preserve
-  memcpy( &pcb[ cid ].ctx, ctx, sizeof( ctx_t ) );
-  pcb[ cid ].status = STATUS_READY;
-
-  //restore
-  memcpy( ctx, &pcb[ nid ].ctx, sizeof( ctx_t ) );
-  pcb[ nid ].status = STATUS_EXECUTING;
-
-  cid = nid;
+    cid = nid;
+  }
 
   //updatePriority();
 
