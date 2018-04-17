@@ -12,11 +12,10 @@ pcb_t pcb[ pnum ];
 int cid = 0;
 int nid = 0;
 int newpcb = 0;
-queue q = {
-  front = 0;
-  rear = -1;
-  itemcount = 0;
-}
+queue_t q;
+q.front = 0;
+q.rear = -1;
+q.itemcount = 0;
 int qpoint = 0;
 
 int peek() {
