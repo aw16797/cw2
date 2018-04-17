@@ -43,11 +43,17 @@ int removeData() {
    PL011_putc( UART0, ' ', true );
    PL011_putc( UART0, 'R', true );
    PL011_putc( UART0, ' ', true );
-   int data = Q.array[Q.front++];
-   if (Q.front == pnum) {
-     Q.front = 0;
+   int data;
+   if (Q.front == Q.rear) {
+     data = Q.array[Q.front];
+   } else {
+     int data = Q.array[Q.front++];
+     if (Q.front == pnum) {
+       Q.front = 0;
+     }
+     Q.itemcount--;
    }
-   Q.itemcount--;
+
    return data;
 }
 
@@ -128,7 +134,7 @@ void scheduler( ctx_t* ctx ) {
   PL011_putc( UART0, ' ', true );
   PL011_putc( UART0, r, true );
   PL011_putc( UART0, ' ', true );
-  
+
   //preserve
   memcpy( &pcb[ cid ].ctx, ctx, sizeof( ctx_t ) );
   pcb[ cid ].status = STATUS_READY;
