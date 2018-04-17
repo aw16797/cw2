@@ -41,7 +41,7 @@ typedef struct{
   int front;
   int rear;
   int itemcount;
-} queue;
+} queue_t;
 
 typedef struct {
   uint32_t cpsr, pc, gpr[ 13 ], sp, lr;
