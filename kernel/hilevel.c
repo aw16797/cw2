@@ -28,9 +28,9 @@ int size() {
   return (Q.itemcount);
 }
 void insert(int data) {
-   PL011_putc( UART0, ' ', true );
-   PL011_putc( UART0, 'I', true );
-   PL011_putc( UART0, ' ', true );
+   // PL011_putc( UART0, ' ', true );
+   // PL011_putc( UART0, 'I', true );
+   // PL011_putc( UART0, ' ', true );
    if(!isFull()) {
       if (Q.rear == pnum-1) {
         Q.rear = -1;
@@ -40,9 +40,9 @@ void insert(int data) {
    }
 }
 int removeData() {
-   PL011_putc( UART0, ' ', true );
-   PL011_putc( UART0, 'R', true );
-   PL011_putc( UART0, ' ', true );
+   // PL011_putc( UART0, ' ', true );
+   // PL011_putc( UART0, 'R', true );
+   // PL011_putc( UART0, ' ', true );
    int data = Q.array[Q.front++];
    if (Q.front == pnum) {
      Q.front = 0;
@@ -119,9 +119,9 @@ void scheduler( ctx_t* ctx ) {
   //nid = findMaxPriority();
   // nid = matchCTX(ctx);
   // if (nid == -1) PL011_putc( UART0, 'Q', true );
-  PL011_putc( UART0, ' ', true );
-  PL011_putc( UART0, 'S', true );
-  PL011_putc( UART0, ' ', true );
+  // PL011_putc( UART0, ' ', true );
+  // PL011_putc( UART0, 'S', true );
+  // PL011_putc( UART0, ' ', true );
 
   pid_t nid = removeData();
 
