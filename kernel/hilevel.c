@@ -17,7 +17,7 @@ queue_t Q;
 int qpoint = 0;
 
 int peek() {
-  return (Q.array[Q.front]);
+  return (Q.array[Q.front].id);
 }
 bool isEmpty() {
   return (Q.itemcount==0);
@@ -36,7 +36,7 @@ void insert(int data) {
       if (Q.rear == pnum-1) {
         Q.rear = -1;
       }
-      Q.array[++Q.rear] = data;
+      Q.array[++Q.rear].id = data;
       Q.itemcount++;
    }
 }
@@ -44,7 +44,7 @@ int removeData() {
    PL011_putc( UART0, ' ', true );
    PL011_putc( UART0, 'R', true );
    PL011_putc( UART0, ' ', true );
-   int data = Q.array[Q.front++];
+   int data = Q.array[Q.front++].id;
    if (Q.front == pnum) {
      Q.front = 0;
    }
