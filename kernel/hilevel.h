@@ -39,7 +39,7 @@ typedef enum {
 typedef struct {
   int id;
   int prt;
-} entity_t
+} entity_t;
 
 typedef struct{
   entity_t array[10];
