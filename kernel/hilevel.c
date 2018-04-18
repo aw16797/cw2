@@ -265,11 +265,9 @@ void hilevel_handler_svc(ctx_t* ctx, uint32_t id) {
       break;
     }
     case 0x04 : { //0x04 => exit( x ), terminate process with status x
-      //clean pcb for process
-      //call scheduler
-      int x = (uint32_t)ctx->gpr[0]
+      int x = (uint32_t)ctx->gpr[0];
       int y = pcbcount-1;
-      pcb[ x ].
+
       if ( x == y ){ // if x is last pcb
         //change newpcb to x
         //wipe pcb[ x ]
@@ -285,9 +283,6 @@ void hilevel_handler_svc(ctx_t* ctx, uint32_t id) {
         memset( &pcb[ x+1 ], 0, sizeof( pcb_t ) );
       }
       pcbcount--;
-      //memcpy( ctx, &pcb[ nid ].ctx, sizeof( ctx_t ) );
-      //pcb[ nid ].status = STATUS_EXECUTING;
-
       break;
     }
     case 0x05 : { //0x05 => exec( x ), start executing at address x
