@@ -238,7 +238,6 @@ void hilevel_handler_svc(ctx_t* ctx, uint32_t id) {
       // return value is 0 for child, and PID of child for parent.
       PL011_putc( UART0, ' ', true );
       PL011_putc( UART0, 'F', true );
-      PL011_putc( UART0, ' ', true );
 
       newpcb++;
 
@@ -267,6 +266,8 @@ void hilevel_handler_svc(ctx_t* ctx, uint32_t id) {
     case 0x04 : { //0x04 => exit( x ), terminate process with status x
       //use cid
       //
+      PL011_putc( UART0, ' ', true );
+      PL011_putc( UART0, 'X', true );
       int y = pcbcount-1;
       int z = cid+1;
 
