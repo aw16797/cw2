@@ -121,8 +121,7 @@ void scheduler( ctx_t* ctx ) {
   cid = nid;
 
   updatePriority();
-
-  }
+  
   return;
 }
 
