@@ -121,7 +121,7 @@ void scheduler( ctx_t* ctx ) {
   cid = nid;
 
   updatePriority();
-  
+
   return;
 }
 
@@ -280,16 +280,20 @@ void hilevel_handler_svc(ctx_t* ctx, uint32_t id) {
       uint32_t x = (uint32_t)ctx->gpr[0];
 
       ctx->pc = x;
+      uint32_t a = &main_P3;
+      uint32_t b = &main_P4;
+      uint32_t c = &main_P5;
+
 
       pcb[ newpcb ].ctx.pc = x;
 
-      if ( x == &main_P3 ){ //p3 has base priority 1
+      if ( x == a ){ //p3 has base priority 1
         pcb[ newpcb ].prtb = 1;
       }
-      else if ( x == &main_P4 ){ //p4 has base priority 2
+      else if ( x == a ){ //p4 has base priority 2
         pcb[ newpcb ].prtb = 2;
       }
-      else if ( x == &main_P5 ){ //p5 has base priority 3
+      else if ( x == a ){ //p5 has base priority 3
         pcb[ newpcb ].prtb = 3;
       }
 
