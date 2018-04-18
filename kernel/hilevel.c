@@ -119,6 +119,7 @@ void scheduler( ctx_t* ctx ) {
   PL011_putc( UART0, 'S', true );
   PL011_putc( UART0, ' ', true );
   if (isEmpty()) {
+    insert(0);
     PL011_putc( UART0, 'Y', true );
   } else {
     pid_t nid = removeData();
