@@ -268,6 +268,7 @@ void hilevel_handler_svc(ctx_t* ctx, uint32_t id) {
       //use cid
       //
       int y = pcbcount-1;
+      int z = cid+1;
 
       if ( cid == y ){ // if cid is last pcb
         //change newpcb to cid
@@ -276,12 +277,12 @@ void hilevel_handler_svc(ctx_t* ctx, uint32_t id) {
         memset( &pcb[ cid ], 0, sizeof( pcb_t ) );
 
       } else { //if there is a process after cid
-        //memcpy pcb[cid+1] into pcb[cid]
+        //put pcb[cid+1] into pcb[cid]
         //newpcb = cid+1
         //wipe pcb[ cid+1 ]
-        memcpy( &pcb[ cid ], &pcb[ cid+1 ], sizeof( pcb_t ) );
-        newpcb = cid+1;
-        memset( &pcb[ cid+1 ], 0, sizeof( pcb_t ) );
+        pcb[ cid ] = pcb[ z ];
+        newpcb = z;
+        memset( &pcb[ z ], 0, sizeof( pcb_t ) );
       }
       pcbcount--;
       scheduler(ctx);
@@ -322,6 +323,7 @@ void hilevel_handler_svc(ctx_t* ctx, uint32_t id) {
     case 0x06 : { //0x06 => kill( pid, x ),
       int x = (uint32_t)ctx->gpr[0];
       int y = pcbcount-1;
+      int z = x+1;
 
       if ( x == y ){ // if x is last pcb
         //change newpcb to x
@@ -333,9 +335,9 @@ void hilevel_handler_svc(ctx_t* ctx, uint32_t id) {
         //memcpy pcb[x+1] into pcb[x]
         //newpcb = x+1
         //wipe pcb[ x+1 ]
-        memcpy( &pcb[ x ], &pcb[ x+1 ], sizeof( pcb_t ) );
-        newpcb = x+1;
-        memset( &pcb[ x+1 ], 0, sizeof( pcb_t ) );
+        pcb[ x ] = pcb[ z ];
+        newpcb = z;
+        memset( &pcb[ z ], 0, sizeof( pcb_t ) );
       }
       pcbcount--;
       scheduler(ctx);
