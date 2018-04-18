@@ -12,6 +12,7 @@ pcb_t pcb[ pnum ];
 int cid = 0;
 int nid = 0;
 int newpcb = 0;
+int pcbcount = 0;
 queue_t Q;
 int qpoint = 0;
 
@@ -72,64 +73,55 @@ extern uint32_t tos_10;
 
 uint32_t tosArray[] = {&tos_console, &tos_P3, &tos_P4, &tos_P5, &tos_6, &tos_7, &tos_8, &tos_9, &tos_10};
 
-pid_t matchCTX(ctx_t* ctx){
-  uint32_t cpc = ctx->pc;
-  bool found = false;
-  pid_t match;
-
-  for (int i = 0; i < 4; i++){
-    ctx_t ctxc = pcb[i].ctx;
-    if ((ctxc.pc) == (cpc)){
-      found = true;
-      match = pcb[i].pid;
-    }
-  }
-  if (found){
-    PL011_putc( UART0, 'Y', true );
-    return match;
-  }
-  else{
-    PL011_putc( UART0, 'N', true );
-    return -1;
-  }
-}
-
 pid_t findMaxPriority(){
   pid_t maxP = pcb[0].prtc;
   pid_t maxPi = pcb[0].pid;
-  for (int i = 1; i < pnum ; i++){
-    if (pcb[i].prtc > maxP){
-      maxP = pcb[0].prtc;
-      maxPi = pcb[i].pid;
+  if (pcbcount > 1) {
+    for (int i = 1; i < pcbcount ; i++){
+      if (pcb[i].prtc > maxP){
+        maxP = pcb[0].prtc;
+        maxPi = pcb[i].pid;
+      }
     }
   }
   return maxPi;
 }
 
 void updatePriority(){
-  for (int i = 0; i < pnum; i++){
-    if (pcb[i].pid != cid){
-      pcb[i].prtc = pcb[i].prtc + pcb[i].prtb;
+  if (pcbcount > 1) {
+    for (int i = 0; i < pcbcount; i++){
+      if (pcb[i].pid != cid){
+        pcb[i].prtc = pcb[i].prtc + pcb[i].prtb;
+      }
     }
   }
 }
 
 void scheduler( ctx_t* ctx ) {
+  //find max p process
+  //   //preserve old, restore new
+  //   //increment other processes p
 
-  if (isEmpty()) {
-    insert(0);
-    PL011_putc( UART0, 'Y', true );
-  } else {
-    PL011_putc( UART0, 'S', true );
-    pid_t nid = removeData();
-    //preserve
-    memcpy( &pcb[ cid ].ctx, ctx, sizeof( ctx_t ) );
-    pcb[ cid ].status = STATUS_READY;
-    //restore
-    memcpy( ctx, &pcb[ nid ].ctx, sizeof( ctx_t ) );
-    pcb[ nid ].status = STATUS_EXECUTING;
+  nid = findMaxPriority();
 
-    cid = nid;
+  // if (isEmpty()) {
+  //   insert(0);
+  //   PL011_putc( UART0, 'Y', true );
+  // } else {
+
+  PL011_putc( UART0, 'S', true );
+  //pid_t nid = removeData();
+  //preserve
+  memcpy( &pcb[ cid ].ctx, ctx, sizeof( ctx_t ) );
+  pcb[ cid ].status = STATUS_READY;
+  //restore
+  memcpy( ctx, &pcb[ nid ].ctx, sizeof( ctx_t ) );
+  pcb[ nid ].status = STATUS_EXECUTING;
+
+  cid = nid;
+
+  updatePriority();
+
   }
   return;
 }
@@ -196,6 +188,7 @@ void hilevel_handler_rst(ctx_t* ctx) {
   cid = 0;
   nid = 0;
   newpcb = 0;
+  pcbcount = 1;
 
   int_enable_irq();
 
@@ -245,8 +238,11 @@ void hilevel_handler_svc(ctx_t* ctx, uint32_t id) {
       PL011_putc( UART0, ' ', true );
       PL011_putc( UART0, 'F', true );
       PL011_putc( UART0, ' ', true );
+
       newpcb++;
+
       uint32_t newtos = tosArray[newpcb];
+
       //assign pcb for child
       memset( &pcb[ newpcb ], 0, sizeof( pcb_t ) );
       pcb[ newpcb ].pid      = newpcb;
@@ -254,6 +250,10 @@ void hilevel_handler_svc(ctx_t* ctx, uint32_t id) {
       pcb[ newpcb ].ctx.cpsr = 0x50;
       pcb[ newpcb ].ctx.pc   = ( uint32_t )( ctx->pc );
       pcb[ newpcb ].ctx.sp   = ( uint32_t )( newtos );
+      pcb[ newpcb ].prtb     = pcb[ cid ].prtb;
+      pcb[ newpcb ].prtc     = pcb[ cid ].prtc;
+
+      pcbcount++;
 
       // if(newpcb < 10){ //if space for new processes
       //   newpcb++;
@@ -279,7 +279,20 @@ void hilevel_handler_svc(ctx_t* ctx, uint32_t id) {
       PL011_putc( UART0, ' ', true );
 
       uint32_t x = (uint32_t)ctx->gpr[0];
+
+      ctx->pc = x;
+
       pcb[ newpcb ].ctx.pc = x;
+
+      if ( x == &main_P3 ){ //p3 has base priority 1
+        pcb[ newpcb ].prtb = 1;
+      }
+      else if ( x == &main_P4 ){ //p4 has base priority 2
+        pcb[ newpcb ].prtb = 2;
+      }
+      else if ( x == &main_P5 ){ //p5 has base priority 3
+        pcb[ newpcb ].prtb = 3;
+      }
 
       insert(newpcb);
 

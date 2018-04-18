@@ -36,8 +36,13 @@ typedef enum {
   STATUS_TERMINATED
 } status_t;
 
+typedef struct {
+  int id;
+  int prt;
+} entity_t
+
 typedef struct{
-  int array[10];
+  entity_t array[10];
   int front;
   int rear;
   int itemcount;
