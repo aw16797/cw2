@@ -284,6 +284,7 @@ void hilevel_handler_svc(ctx_t* ctx, uint32_t id) {
         newpcb = z;
         memset( &pcb[ z ], 0, sizeof( pcb_t ) );
       }
+      cid = 0;
       pcbcount--;
       scheduler(ctx);
       break;
@@ -338,6 +339,9 @@ void hilevel_handler_svc(ctx_t* ctx, uint32_t id) {
         pcb[ x ] = pcb[ z ];
         newpcb = z;
         memset( &pcb[ z ], 0, sizeof( pcb_t ) );
+      }
+      if ( x == cid ){
+        cid = 0;
       }
       pcbcount--;
       scheduler(ctx);
