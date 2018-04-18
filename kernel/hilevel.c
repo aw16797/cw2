@@ -279,7 +279,7 @@ void hilevel_handler_svc(ctx_t* ctx, uint32_t id) {
 
       uint32_t x = (uint32_t)ctx->gpr[0];
 
-      ctx->pc = x;
+      //ctx->pc = x;
       uint32_t a = (uint32_t)&main_P3;
       uint32_t b = (uint32_t)&main_P4;
       uint32_t c = (uint32_t)&main_P5;
