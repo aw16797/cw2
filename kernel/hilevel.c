@@ -108,8 +108,10 @@ void scheduler( ctx_t* ctx ) {
   //   insert(0);
   //   PL011_putc( UART0, 'Y', true );
   // } else {
-
+  PL011_putc( UART0, ' ', true );
   PL011_putc( UART0, 'S', true );
+  PL011_putc( UART0, ' ', true );
+
   //pid_t nid = removeData();
   //preserve
   memcpy( &pcb[ cid ].ctx, ctx, sizeof( ctx_t ) );
