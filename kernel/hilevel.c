@@ -137,7 +137,6 @@ void scheduler( ctx_t* ctx ) {
   PL011_putc( UART0, 'c', true );
   PL011_putc( UART0, ' ', true );
 
-
   return;
 }
 
@@ -302,7 +301,7 @@ void hilevel_handler_svc(ctx_t* ctx, uint32_t id) {
       }
       cid = 0;
       pcbcount--;
-      scheduler(ctx);
+      //scheduler(ctx);
       break;
     }
     case 0x05 : { //0x05 => exec( x ), start executing at address x
@@ -360,7 +359,7 @@ void hilevel_handler_svc(ctx_t* ctx, uint32_t id) {
         cid = 0;
       }
       pcbcount--;
-      scheduler(ctx);
+      //scheduler(ctx);
       break;
     }
 
