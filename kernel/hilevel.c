@@ -189,9 +189,10 @@ void removePCB( int current ){
   // if ( current == cid ){
   //   cid = 0;
   // }
+  pcbcount--;
+
   PL011_putc( UART0, ' ', true );
   PL011_putc( UART0, '2', true );
-  pcbcount--;
 }
 
 void hilevel_handler_svc(ctx_t* ctx, uint32_t id) {
