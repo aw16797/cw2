@@ -202,8 +202,6 @@ void hilevel_handler_irq(ctx_t* ctx) {
   if( id == GIC_SOURCE_TIMER0 ) {
     scheduler(ctx);
     TIMER0->Timer1IntClr = 0x01;
-    PL011_putc( UART0, ' ', true );
-    PL011_putc( UART0, 'I', true );
   }
 
   GICC0->EOIR = id;
@@ -224,9 +222,9 @@ void exitF( int current ){
     newpcb = current;
   }
   //cid = 0;
-  if ( current == cid ){
-    cid = 0;
-  }
+  // if ( current == cid ){
+  //   cid = 0;
+  // }
   pcbcount--;
 }
 
