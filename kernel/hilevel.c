@@ -170,7 +170,7 @@ void hilevel_handler_irq(ctx_t* ctx) {
   return;
 }
 
-void remove( int current ){
+void removePCB( int current ){
   int lastindex = pcbcount-1;
   int nextindex = current+1;
   int previndex = current-1;
@@ -259,7 +259,7 @@ void hilevel_handler_svc(ctx_t* ctx, uint32_t id) {
       PL011_putc( UART0, 'X', true );
       int x = (uint32_t)ctx->gpr[0];
       //pcb[ cid ].status = STATUS_TERMINATED;
-      remove(cid);
+      removePCB(cid);
       cid = 0;
       scheduler(ctx);
       break;
@@ -300,7 +300,7 @@ void hilevel_handler_svc(ctx_t* ctx, uint32_t id) {
       PL011_putc( UART0, 'K', true );
       int current = (uint32_t)ctx->gpr[0];
       if (current < pcbcount) {
-        remove(current);
+        removePCB(current);
       }
       else{
         PL011_putc( UART0, ' ', true );
