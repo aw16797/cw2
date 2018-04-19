@@ -270,19 +270,20 @@ void hilevel_handler_svc(ctx_t* ctx, uint32_t id) {
       PL011_putc( UART0, 'X', true );
       int y = pcbcount-1;
       int z = cid+1;
+      int x = cid-1;
 
       if ( cid == y ){ // if cid is last pcb
         //change newpcb to cid
         //wipe pcb[ cid ]
-        newpcb = cid;
+        newpcb = x;
         memset( &pcb[ cid ], 0, sizeof( pcb_t ) );
 
-      } else { //if there is a process after cid
+      } else { //if there is a process after cid, ie at z
         //put pcb[cid+1] into pcb[cid]
         //newpcb = cid+1
         //wipe pcb[ cid+1 ]
         pcb[ cid ] = pcb[ z ];
-        newpcb = z;
+        newpcb = cid;
         memset( &pcb[ z ], 0, sizeof( pcb_t ) );
       }
       cid = 0;
