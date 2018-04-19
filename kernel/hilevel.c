@@ -290,7 +290,8 @@ void hilevel_handler_svc(ctx_t* ctx, uint32_t id) {
       //use cid
       PL011_putc( UART0, ' ', true );
       PL011_putc( UART0, 'X', true );
-      exitF(cid);
+      int current = cid;
+      exitF(current);
       //scheduler(ctx);
       break;
     }
