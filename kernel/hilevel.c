@@ -259,7 +259,8 @@ void hilevel_handler_svc(ctx_t* ctx, uint32_t id) {
       PL011_putc( UART0, 'X', true );
       int x = (uint32_t)ctx->gpr[0];
       //pcb[ cid ].status = STATUS_TERMINATED;
-      remove(current)
+      remove(cid);
+      cid = 0;
       scheduler(ctx);
       break;
     }
