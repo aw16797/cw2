@@ -15,7 +15,6 @@ int newpcb = 0;
 int pcbcount = 0;
 queue_t Q;
 int qpoint = 0;
-int 
 
 int peek() {
   return (Q.array[Q.front].id);
