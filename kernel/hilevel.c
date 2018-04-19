@@ -287,7 +287,7 @@ void hilevel_handler_svc(ctx_t* ctx, uint32_t id) {
         pcb[ cid ] = pcb[ nextindex ];
         newpcb = cid;
       }
-      cid = 0;
+      //cid = 0;
       pcbcount--;
       //scheduler(ctx);
       break;
@@ -326,7 +326,7 @@ void hilevel_handler_svc(ctx_t* ctx, uint32_t id) {
     }
     case 0x06 : { //0x06 => kill( pid, x ),
       PL011_putc( UART0, ' ', true );
-      PL011_putc( UART0, 'X', true );
+      PL011_putc( UART0, 'K', true );
       int current = (uint32_t)ctx->gpr[0];
       int lastindex = pcbcount-1;
       int nextindex = current+1;
