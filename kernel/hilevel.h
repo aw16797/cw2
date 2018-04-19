@@ -37,18 +37,6 @@ typedef enum {
 } status_t;
 
 typedef struct {
-  int id;
-  int prt;
-} entity_t;
-
-typedef struct{
-  entity_t array[10];
-  int front;
-  int rear;
-  int itemcount;
-} queue_t;
-
-typedef struct {
   uint32_t cpsr, pc, gpr[ 13 ], sp, lr;
 } ctx_t;
 

@@ -1,57 +1,22 @@
 /* Copyright (C) 2017 Daniel Page <csdsp@bristol.ac.uk>
  *
- * Use of this source code is restricted per the CC BY-NC-ND license, a copy of
+ * Use of this source code is restricted per the CC BY-NC-ND license, a copy ofm,
  * which can be found via http://creativecommons.org (and should be included as
  * LICENSE.txt within the associated archive or repository).
  */
 
 #include "hilevel.h"
 #define pnum 10
-#define ni (pnum-1)
+#define cprt 9
+#define p3prt 8
+#define p4prt 9
+#define p5prt 10
+
 pcb_t pcb[ pnum ];
 int cid = 0;
 int nid = 0;
 int newpcb = 0;
 int pcbcount = 0;
-queue_t Q;
-int qpoint = 0;
-
-int peek() {
-  return (Q.array[Q.front].id);
-}
-bool isEmpty() {
-  return (Q.itemcount==0);
-}
-bool isFull() {
-  return (Q.itemcount==pnum);
-}
-int size() {
-  return (Q.itemcount);
-}
-void insert(int data) {
-   PL011_putc( UART0, ' ', true );
-   PL011_putc( UART0, 'I', true );
-   PL011_putc( UART0, ' ', true );
-   if(!isFull()) {
-      if (Q.rear == pnum-1) {
-        Q.rear = -1;
-      }
-      Q.array[++Q.rear].id = data;
-      Q.itemcount++;
-   }
-}
-int removeData() {
-   PL011_putc( UART0, ' ', true );
-   PL011_putc( UART0, 'R', true );
-   PL011_putc( UART0, ' ', true );
-   int data = Q.array[Q.front++].id;
-   if (Q.front == pnum) {
-     Q.front = 0;
-   }
-   Q.itemcount--;
-   return data;
-}
-
 
 extern void     main_P3();
 extern uint32_t tos_P3;
@@ -146,7 +111,7 @@ void hilevel_handler_rst(ctx_t* ctx) {
   pcb[ 0 ].ctx.cpsr = 0x50;
   pcb[ 0 ].ctx.pc   = ( uint32_t )( &main_console );
   pcb[ 0 ].ctx.sp   = ( uint32_t )( &tos_console  );
-  pcb[ 0 ].prtb = 1;
+  pcb[ 0 ].prtb = cprt;
   pcb[ 0 ].prtc = 0;
 
   // //initialise p3
@@ -181,10 +146,6 @@ void hilevel_handler_rst(ctx_t* ctx) {
   memcpy( ctx, &pcb[ 0 ].ctx, sizeof( ctx_t ) );
   pcb[ 0 ].status = STATUS_EXECUTING;
 
-  Q.front = 0;
-  Q.rear = -1;
-  Q.itemcount = 0;
-
   cid = 0;
   nid = 0;
   newpcb = 0;
@@ -209,7 +170,7 @@ void hilevel_handler_irq(ctx_t* ctx) {
   return;
 }
 
-void exitF( int current ){
+void remove( int current ){
   int lastindex = pcbcount-1;
   int nextindex = current+1;
   int previndex = current-1;
@@ -266,6 +227,12 @@ void hilevel_handler_svc(ctx_t* ctx, uint32_t id) {
 
       uint32_t newtos = tosArray[newpcb];
 
+      for(int i = 0; i > pcbcount; i++){
+        if(pcb[i].status == STATUS_TERMINATED){
+          remove(pcb[i].pid);
+        }
+      }
+
       //assign pcb for child
       memset( &pcb[ newpcb ], 0, sizeof( pcb_t ) );
       pcb[ newpcb ].pid      = newpcb;
@@ -290,9 +257,9 @@ void hilevel_handler_svc(ctx_t* ctx, uint32_t id) {
       //use cid
       PL011_putc( UART0, ' ', true );
       PL011_putc( UART0, 'X', true );
-      int current = cid;
-      exitF(current);
-      //scheduler(ctx);
+      int x = (uint32_t)ctx->gpr[0];
+      pcb[ cid ].status = STATUS_TERMINATED;
+      //remove(current)
       break;
     }
     case 0x05 : { //0x05 => exec( x ), start executing at address x
@@ -310,21 +277,20 @@ void hilevel_handler_svc(ctx_t* ctx, uint32_t id) {
       uint32_t b = (uint32_t)&main_P4;
       uint32_t c = (uint32_t)&main_P5;
 
-
       pcb[ newpcb ].ctx.pc = x;
 
       if ( x == a ){ //p3 has base priority 1
-        pcb[ newpcb ].prtb = 1;
+        PL011_putc( UART0, '@', true );
+        pcb[ newpcb ].prtb = p3prt;
       }
-      else if ( x == a ){ //p4 has base priority 2
-        pcb[ newpcb ].prtb = 2;
+      else if ( x == b ){ //p4 has base priority 2
+        PL011_putc( UART0, '#', true );
+        pcb[ newpcb ].prtb = p4prt;
       }
-      else if ( x == a ){ //p5 has base priority 3
-        pcb[ newpcb ].prtb = 3;
+      else if ( x == c ){ //p5 has base priority 3
+        PL011_putc( UART0, '&', true );
+        pcb[ newpcb ].prtb = p5prt;
       }
-
-      //insert(newpcb);
-
       break;
     }
     case 0x06 : { //0x06 => kill( pid, x ),
@@ -332,7 +298,7 @@ void hilevel_handler_svc(ctx_t* ctx, uint32_t id) {
       PL011_putc( UART0, 'K', true );
       int current = (uint32_t)ctx->gpr[0];
       if (current < pcbcount) {
-        exitF(current);
+        remove(current);
       }
       else{
         PL011_putc( UART0, ' ', true );
