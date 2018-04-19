@@ -288,7 +288,7 @@ void hilevel_handler_svc(ctx_t* ctx, uint32_t id) {
       if ( cid == y ){ // if cid is last pcb
         //change newpcb to cid
         //wipe pcb[ cid ]
-        newpcb = x;
+        newpcb = cid;
         memset( &pcb[ cid ], 0, sizeof( pcb_t ) );
 
       } else { //if there is a process after cid, ie at z
@@ -296,7 +296,7 @@ void hilevel_handler_svc(ctx_t* ctx, uint32_t id) {
         //newpcb = cid+1
         //wipe pcb[ cid+1 ]
         pcb[ cid ] = pcb[ z ];
-        newpcb = cid;
+        newpcb = y;
         memset( &pcb[ z ], 0, sizeof( pcb_t ) );
       }
       cid = 0;
