@@ -227,12 +227,6 @@ void hilevel_handler_svc(ctx_t* ctx, uint32_t id) {
 
       uint32_t newtos = tosArray[newpcb];
 
-      for(int i = 0; i > pcbcount; i++){
-        if(pcb[i].status == STATUS_TERMINATED){
-          remove(pcb[i].pid);
-        }
-      }
-
       //assign pcb for child
       memset( &pcb[ newpcb ], 0, sizeof( pcb_t ) );
       pcb[ newpcb ].pid      = newpcb;
