@@ -71,7 +71,8 @@ extern uint32_t tos_8;
 extern uint32_t tos_9;
 extern uint32_t tos_10;
 
-uint32_t tosArray[] = {&tos_console, &tos_P3, &tos_P4, &tos_P5, &tos_6, &tos_7, &tos_8, &tos_9, &tos_10};
+uint32_t tosArray[] = {(uint32_t)&tos_console, (uint32_t)&tos_P3, (uint32_t)&tos_P4, (uint32_t)&tos_P5,
+  (uint32_t)&tos_6, (uint32_t)&tos_7, (uint32_t)&tos_8, (uint32_t)&tos_9, (uint32_t)&tos_10};
 
 pid_t findMaxPriority(){
   pid_t maxP = pcb[0].prtc;
