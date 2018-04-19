@@ -111,8 +111,6 @@ void scheduler( ctx_t* ctx ) {
   // } else {
   PL011_putc( UART0, ' ', true );
   PL011_putc( UART0, 'S', true );
-  PL011_putc( UART0, ' ', true );
-
   //pid_t nid = removeData();
   //preserve
   memcpy( &pcb[ cid ].ctx, ctx, sizeof( ctx_t ) );
@@ -123,19 +121,16 @@ void scheduler( ctx_t* ctx ) {
 
   PL011_putc( UART0, ' ', true );
   PL011_putc( UART0, 'a', true );
-  PL011_putc( UART0, ' ', true );
 
   cid = nid;
 
   PL011_putc( UART0, ' ', true );
   PL011_putc( UART0, 'b', true );
-  PL011_putc( UART0, ' ', true );
 
   updatePriority();
 
   PL011_putc( UART0, ' ', true );
   PL011_putc( UART0, 'c', true );
-  PL011_putc( UART0, ' ', true );
 
   return;
 }
@@ -281,23 +276,16 @@ void hilevel_handler_svc(ctx_t* ctx, uint32_t id) {
       //
       PL011_putc( UART0, ' ', true );
       PL011_putc( UART0, 'X', true );
-      int y = pcbcount-1;
-      int z = cid+1;
-      int x = cid-1;
+      int lastindex = pcbcount-1;
+      int nextindex = cid+1;
+      int previndex = cid-1;
 
-      if ( cid == y ){ // if cid is last pcb
-        //change newpcb to cid
-        //wipe pcb[ cid ]
-        newpcb = x;
-        //memset( &pcb[ cid ], 0, sizeof( pcb_t ) );
-
-      } else { //if there is a process after cid, ie at z
-        //put pcb[cid+1] into pcb[cid]
-        //newpcb = cid+1
-        //wipe pcb[ cid+1 ]
-        pcb[ cid ] = pcb[ z ];
+      if ( cid == lastindex ){ // if cid is last pcb
+        newpcb = previndex;
+      }
+      else { //if there is a process after cid, ie at z
+        pcb[ cid ] = pcb[ nextindex ];
         newpcb = cid;
-        //memset( &pcb[ z ], 0, sizeof( pcb_t ) );
       }
       cid = 0;
       pcbcount--;
@@ -337,26 +325,21 @@ void hilevel_handler_svc(ctx_t* ctx, uint32_t id) {
       break;
     }
     case 0x06 : { //0x06 => kill( pid, x ),
-      int x = (uint32_t)ctx->gpr[0];
-      int y = pcbcount-1;
-      int z = x+1;
-      int a = x-1;
+      PL011_putc( UART0, ' ', true );
+      PL011_putc( UART0, 'X', true );
+      int current = (uint32_t)ctx->gpr[0];
+      int lastindex = pcbcount-1;
+      int nextindex = x+1;
+      int previndex = x-1;
 
-      if ( x == y ){ // if x is last pcb
-        //change newpcb to x
-        //wipe pcb[ x ]
-        newpcb = a;
-        //memset( &pcb[ x ], 0, sizeof( pcb_t ) );
-
-      } else { //if there is a process after x
-        //memcpy pcb[x+1] into pcb[x]
-        //newpcb = x+1
-        //wipe pcb[ x+1 ]
-        pcb[ x ] = pcb[ z ];
-        newpcb = x;
-        //memset( &pcb[ z ], 0, sizeof( pcb_t ) );
+      if ( current == lastindex ){ // if x is last pcb
+        newpcb = previndex;
       }
-      if ( x == cid ){
+      else { //if there is a process after x
+        pcb[ current ] = pcb[ nextindex ];
+        newpcb = current;
+      }
+      if ( current == cid ){
         cid = 0;
       }
       pcbcount--;
