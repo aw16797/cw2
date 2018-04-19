@@ -288,16 +288,16 @@ void hilevel_handler_svc(ctx_t* ctx, uint32_t id) {
       if ( cid == y ){ // if cid is last pcb
         //change newpcb to cid
         //wipe pcb[ cid ]
-        newpcb = cid;
-        memset( &pcb[ cid ], 0, sizeof( pcb_t ) );
+        newpcb = x;
+        //memset( &pcb[ cid ], 0, sizeof( pcb_t ) );
 
       } else { //if there is a process after cid, ie at z
         //put pcb[cid+1] into pcb[cid]
         //newpcb = cid+1
         //wipe pcb[ cid+1 ]
         pcb[ cid ] = pcb[ z ];
-        newpcb = y;
-        memset( &pcb[ z ], 0, sizeof( pcb_t ) );
+        newpcb = cid;
+        //memset( &pcb[ z ], 0, sizeof( pcb_t ) );
       }
       cid = 0;
       pcbcount--;
@@ -340,20 +340,21 @@ void hilevel_handler_svc(ctx_t* ctx, uint32_t id) {
       int x = (uint32_t)ctx->gpr[0];
       int y = pcbcount-1;
       int z = x+1;
+      int a = x-1;
 
       if ( x == y ){ // if x is last pcb
         //change newpcb to x
         //wipe pcb[ x ]
-        newpcb = x;
-        memset( &pcb[ x ], 0, sizeof( pcb_t ) );
+        newpcb = a;
+        //memset( &pcb[ x ], 0, sizeof( pcb_t ) );
 
       } else { //if there is a process after x
         //memcpy pcb[x+1] into pcb[x]
         //newpcb = x+1
         //wipe pcb[ x+1 ]
         pcb[ x ] = pcb[ z ];
-        newpcb = z;
-        memset( &pcb[ z ], 0, sizeof( pcb_t ) );
+        newpcb = x;
+        //memset( &pcb[ z ], 0, sizeof( pcb_t ) );
       }
       if ( x == cid ){
         cid = 0;
