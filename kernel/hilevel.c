@@ -258,8 +258,9 @@ void hilevel_handler_svc(ctx_t* ctx, uint32_t id) {
       PL011_putc( UART0, ' ', true );
       PL011_putc( UART0, 'X', true );
       int x = (uint32_t)ctx->gpr[0];
-      pcb[ cid ].status = STATUS_TERMINATED;
-      //remove(current)
+      //pcb[ cid ].status = STATUS_TERMINATED;
+      remove(current)
+      scheduler(ctx);
       break;
     }
     case 0x05 : { //0x05 => exec( x ), start executing at address x
