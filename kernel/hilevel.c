@@ -119,18 +119,9 @@ void scheduler( ctx_t* ctx ) {
   memcpy( ctx, &pcb[ nid ].ctx, sizeof( ctx_t ) );
   pcb[ nid ].status = STATUS_EXECUTING;
 
-  PL011_putc( UART0, ' ', true );
-  PL011_putc( UART0, 'a', true );
-
   cid = nid;
 
-  PL011_putc( UART0, ' ', true );
-  PL011_putc( UART0, 'b', true );
-
   updatePriority();
-
-  PL011_putc( UART0, ' ', true );
-  PL011_putc( UART0, 'c', true );
 
   return;
 }
@@ -207,15 +198,36 @@ void hilevel_handler_rst(ctx_t* ctx) {
 void hilevel_handler_irq(ctx_t* ctx) {
   uint32_t id = GICC0->IAR;
 
+
   if( id == GIC_SOURCE_TIMER0 ) {
     scheduler(ctx);
     TIMER0->Timer1IntClr = 0x01;
-
+    PL011_putc( UART0, ' ', true );
+    PL011_putc( UART0, 'I', true );
   }
 
   GICC0->EOIR = id;
 
   return;
+}
+
+void exitF( int current ){
+  int lastindex = pcbcount-1;
+  int nextindex = current+1;
+  int previndex = current-1;
+
+  if ( current == lastindex ){ // if cid is last pcb
+    newpcb = previndex;
+  }
+  else { //if there is a process after cid, ie at z
+    pcb[ current ] = pcb[ nextindex ];
+    newpcb = current;
+  }
+  //cid = 0;
+  if ( current == cid ){
+    cid = 0;
+  }
+  pcbcount--;
 }
 
 void hilevel_handler_svc(ctx_t* ctx, uint32_t id) {
@@ -273,22 +285,9 @@ void hilevel_handler_svc(ctx_t* ctx, uint32_t id) {
     }
     case 0x04 : { //0x04 => exit( x ), terminate process with status x
       //use cid
-      //
       PL011_putc( UART0, ' ', true );
       PL011_putc( UART0, 'X', true );
-      int lastindex = pcbcount-1;
-      int nextindex = cid+1;
-      int previndex = cid-1;
-
-      if ( cid == lastindex ){ // if cid is last pcb
-        newpcb = previndex;
-      }
-      else { //if there is a process after cid, ie at z
-        pcb[ cid ] = pcb[ nextindex ];
-        newpcb = cid;
-      }
-      //cid = 0;
-      pcbcount--;
+      exitF(cid);
       //scheduler(ctx);
       break;
     }
@@ -328,22 +327,7 @@ void hilevel_handler_svc(ctx_t* ctx, uint32_t id) {
       PL011_putc( UART0, ' ', true );
       PL011_putc( UART0, 'K', true );
       int current = (uint32_t)ctx->gpr[0];
-      int lastindex = pcbcount-1;
-      int nextindex = current+1;
-      int previndex = current-1;
-
-      if ( current == lastindex ){ // if x is last pcb
-        newpcb = previndex;
-      }
-      else { //if there is a process after x
-        pcb[ current ] = pcb[ nextindex ];
-        newpcb = current;
-      }
-      if ( current == cid ){
-        cid = 0;
-      }
-      pcbcount--;
-      //scheduler(ctx);
+      exitF(current);
       break;
     }
 
