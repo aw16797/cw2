@@ -330,7 +330,13 @@ void hilevel_handler_svc(ctx_t* ctx, uint32_t id) {
       PL011_putc( UART0, ' ', true );
       PL011_putc( UART0, 'K', true );
       int current = (uint32_t)ctx->gpr[0];
-      exitF(current);
+      if (current < pcbcount) {
+        exitF(current);
+      }
+      else{
+        PL011_putc( UART0, ' ', true );
+        PL011_putc( UART0, 'H', true );
+      }
       break;
     }
 
