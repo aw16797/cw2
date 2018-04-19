@@ -15,6 +15,7 @@ int newpcb = 0;
 int pcbcount = 0;
 queue_t Q;
 int qpoint = 0;
+int 
 
 int peek() {
   return (Q.array[Q.front].id);
@@ -121,9 +122,22 @@ void scheduler( ctx_t* ctx ) {
   memcpy( ctx, &pcb[ nid ].ctx, sizeof( ctx_t ) );
   pcb[ nid ].status = STATUS_EXECUTING;
 
+  PL011_putc( UART0, ' ', true );
+  PL011_putc( UART0, 'a', true );
+  PL011_putc( UART0, ' ', true );
+
   cid = nid;
 
+  PL011_putc( UART0, ' ', true );
+  PL011_putc( UART0, 'b', true );
+  PL011_putc( UART0, ' ', true );
+
   updatePriority();
+
+  PL011_putc( UART0, ' ', true );
+  PL011_putc( UART0, 'c', true );
+  PL011_putc( UART0, ' ', true );
+
 
   return;
 }
@@ -320,7 +334,7 @@ void hilevel_handler_svc(ctx_t* ctx, uint32_t id) {
         pcb[ newpcb ].prtb = 3;
       }
 
-      insert(newpcb);
+      //insert(newpcb);
 
       break;
     }
