@@ -13,9 +13,9 @@
 #include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
-#include <string.h>
-#include <stdio.h>
-#include <stdlib.h>
+// #include <string.h>
+// #include <stdio.h>
+// #include <stdlib.h>
 
 // Include functionality relating to the   kernel.
 
