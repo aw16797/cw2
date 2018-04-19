@@ -329,8 +329,8 @@ void hilevel_handler_svc(ctx_t* ctx, uint32_t id) {
       PL011_putc( UART0, 'X', true );
       int current = (uint32_t)ctx->gpr[0];
       int lastindex = pcbcount-1;
-      int nextindex = x+1;
-      int previndex = x-1;
+      int nextindex = current+1;
+      int previndex = current-1;
 
       if ( current == lastindex ){ // if x is last pcb
         newpcb = previndex;
