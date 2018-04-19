@@ -256,7 +256,7 @@ void hilevel_handler_svc(ctx_t* ctx, uint32_t id) {
       //pcb[ cid ].status = STATUS_TERMINATED;
       removePCB(cid);
       cid = 0;
-      scheduler(ctx);
+      scheduler(pcb[cid].ctx);
       break;
     }
     case 0x05 : { //0x05 => exec( x ), start executing at address x
