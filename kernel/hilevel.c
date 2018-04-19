@@ -214,6 +214,9 @@ void exitF( int current ){
   int nextindex = current+1;
   int previndex = current-1;
 
+  PL011_putc( UART0, ' ', true );
+  PL011_putc( UART0, '1', true );
+
   if ( current == lastindex ){ // if cid is last pcb
     newpcb = previndex;
   }
@@ -225,6 +228,8 @@ void exitF( int current ){
   // if ( current == cid ){
   //   cid = 0;
   // }
+  PL011_putc( UART0, ' ', true );
+  PL011_putc( UART0, '2', true );
   pcbcount--;
 }
 
