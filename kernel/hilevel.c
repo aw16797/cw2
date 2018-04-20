@@ -11,6 +11,7 @@
 #define p3prt 8
 #define p4prt 9
 #define p5prt 10
+#define p6prt 8
 
 pcb_t pcb[ pnum ];
 int cid = 0;
@@ -19,24 +20,22 @@ int newpcb = 0;
 int pcbcount = 0;
 
 extern void     main_P3();
-extern uint32_t tos_P3;
-
 extern void     main_P4();
-extern uint32_t tos_P4;
-
 extern void     main_P5();
-extern uint32_t tos_P5;
-
+extern void     main_P6();
 extern void     main_console();
-extern uint32_t tos_console;
 
+extern uint32_t tos_console;
+extern uint32_t tos_3;
+extern uint32_t tos_4;
+extern uint32_t tos_5;
 extern uint32_t tos_6;
 extern uint32_t tos_7;
 extern uint32_t tos_8;
 extern uint32_t tos_9;
 extern uint32_t tos_10;
 
-uint32_t tosArray[] = {(uint32_t)&tos_console, (uint32_t)&tos_P3, (uint32_t)&tos_P4, (uint32_t)&tos_P5,
+uint32_t tosArray[] = {(uint32_t)&tos_console, (uint32_t)&tos_3, (uint32_t)&tos_4, (uint32_t)&tos_5,
   (uint32_t)&tos_6, (uint32_t)&tos_7, (uint32_t)&tos_8, (uint32_t)&tos_9, (uint32_t)&tos_10};
 
 pid_t findMaxPriority(){
@@ -45,8 +44,10 @@ pid_t findMaxPriority(){
   if (pcbcount > 1) {
     for (int i = 1; i < pcbcount ; i++){
       if (pcb[i].prtc > maxP){
-        maxP = pcb[0].prtc;
-        maxPi = pcb[i].pid;
+        if (pcb[i].status != STATUS_TERMINATED){
+          maxP = pcb[0].prtc;
+          maxPi = pcb[i].pid;
+        }
       }
     }
   }
@@ -70,13 +71,8 @@ void scheduler( ctx_t* ctx ) {
 
   nid = findMaxPriority();
 
-  // if (isEmpty()) {
-  //   insert(0);
-  //   PL011_putc( UART0, 'Y', true );
-  // } else {
   PL011_putc( UART0, ' ', true );
   PL011_putc( UART0, 'S', true );
-  //pid_t nid = removeData();
   //preserve
   memcpy( &pcb[ cid ].ctx, ctx, sizeof( ctx_t ) );
   pcb[ cid ].status = STATUS_READY;
@@ -85,6 +81,9 @@ void scheduler( ctx_t* ctx ) {
   pcb[ nid ].status = STATUS_EXECUTING;
 
   cid = nid;
+
+  PL011_putc( UART0, ' ', true );
+  if(cid == 0) PL011_putc( UART0, 'C', true );
 
   updatePriority();
 
@@ -104,6 +103,9 @@ void hilevel_handler_rst(ctx_t* ctx) {
   GICC0->CTLR         = 0x00000001; // enable GIC interface
   GICD0->CTLR         = 0x00000001; // enable GIC distributor
 
+  PL011_putc( UART0, ' ', true );
+  PL011_putc( UART0, 'T', true );
+
   //initialise console
   memset( &pcb[ 0 ], 0, sizeof( pcb_t ) );
   pcb[ 0 ].pid      = 0;
@@ -113,34 +115,6 @@ void hilevel_handler_rst(ctx_t* ctx) {
   pcb[ 0 ].ctx.sp   = ( uint32_t )( &tos_console  );
   pcb[ 0 ].prtb = cprt;
   pcb[ 0 ].prtc = 0;
-
-  // //initialise p3
-  // memset( &pcb[ 1 ], 0, sizeof( pcb_t ) );
-  // pcb[ 1 ].pid      = 1;
-  // pcb[ 1 ].status   = STATUS_READY;
-  // pcb[ 1 ].ctx.cpsr = 0x50;
-  // pcb[ 1 ].ctx.pc   = ( uint32_t )( &main_P3 );
-  // pcb[ 1 ].ctx.sp   = ( uint32_t )( &tos_P3  );
-  // pcb[ 1 ].prtb     = 1;
-  // pcb[ 1 ].prtc     = 0;
-  //
-  // //initialise p4
-  // memset( &pcb[ 2 ], 0, sizeof( pcb_t ) );
-  // pcb[ 2 ].pid      = 2;
-  // pcb[ 2 ].status   = STATUS_READY;
-  // pcb[ 2 ].ctx.cpsr = 0x50;
-  // pcb[ 2 ].ctx.pc   = ( uint32_t )( &main_P4 );
-  // pcb[ 2 ].ctx.sp   = ( uint32_t )( &tos_P4  );
-  // pcb[ 2 ].prtb     = 1;
-  // pcb[ 2 ].prtc     = 0;
-  //
-  // //initialise p5
-  // memset( &pcb[ 3 ], 0, sizeof( pcb_t ) );
-  // pcb[ 3 ].pid      = 3;
-  // pcb[ 3 ].status   = STATUS_READY;
-  // pcb[ 3 ].ctx.cpsr = 0x50;
-  // pcb[ 3 ].ctx.pc   = ( uint32_t )( &main_P5 );
-  // pcb[ 3 ].ctx.sp   = ( uint32_t )( &tos_P5  );
 
   // execute console
   memcpy( ctx, &pcb[ 0 ].ctx, sizeof( ctx_t ) );
@@ -159,10 +133,9 @@ void hilevel_handler_rst(ctx_t* ctx) {
 void hilevel_handler_irq(ctx_t* ctx) {
   uint32_t id = GICC0->IAR;
 
-
   if( id == GIC_SOURCE_TIMER0 ) {
     scheduler(ctx);
-    TIMER0->Timer1IntClr = 0x01;
+    TIMER0->Timer1IntClr = 0x01;        //pcb[ current ].status = STATUS_TERMINATED;
   }
 
   GICC0->EOIR = id;
@@ -171,28 +144,21 @@ void hilevel_handler_irq(ctx_t* ctx) {
 }
 
 void removePCB( int current ){
+  PL011_putc( UART0, ' ', true );
+  PL011_putc( UART0, 'R', true );
+
   int lastindex = pcbcount-1;
   int nextindex = current+1;
   int previndex = current-1;
 
-  PL011_putc( UART0, ' ', true );
-  PL011_putc( UART0, '1', true );
-
   if ( current == lastindex ){ // if cid is last pcb
     newpcb = previndex;
   }
-  else { //if there is a process after cid, ie at z
+  else { //if there is a process after cid, ie next index
     pcb[ current ] = pcb[ nextindex ];
     newpcb = current;
   }
-  //cid = 0;
-  // if ( current == cid ){
-  //   cid = 0;
-  // }
   pcbcount--;
-
-  PL011_putc( UART0, ' ', true );
-  PL011_putc( UART0, '2', true );
 }
 
 void hilevel_handler_svc(ctx_t* ctx, uint32_t id) {
@@ -240,25 +206,22 @@ void hilevel_handler_svc(ctx_t* ctx, uint32_t id) {
 
       pcbcount++;
 
-      // if(newpcb < 10){ //if space for new processes
-      //   newpcb++;
-      // } else{
-      //   PL011_putc( UART0, 'K', true );
-        //cant make new process
-        //do something about executing parent?
+      if(newpcb == 9){ //if no more spaces, re use first
+         newpcb = 0;
+      }
       break;
     }
+
     case 0x04 : { //0x04 => exit( x ), terminate process with status x
       //use cid
       PL011_putc( UART0, ' ', true );
       PL011_putc( UART0, 'X', true );
-      int x = (uint32_t)ctx->gpr[0];
-      //pcb[ cid ].status = STATUS_TERMINATED;
+
       removePCB(cid);
-      cid = 0;
       scheduler(ctx);
       break;
     }
+
     case 0x05 : { //0x05 => exec( x ), start executing at address x
       //replace current process image (e.g., text segment) with with new process image: effectively this means execute a new program,
       //reset state (e.g., stack pointer); continue to execute at the entry point of new program,
@@ -273,34 +236,52 @@ void hilevel_handler_svc(ctx_t* ctx, uint32_t id) {
       uint32_t a = (uint32_t)&main_P3;
       uint32_t b = (uint32_t)&main_P4;
       uint32_t c = (uint32_t)&main_P5;
+      uint32_t d = (uint32_t)&main_P6;
 
       pcb[ newpcb ].ctx.pc = x;
 
-      if ( x == a ){ //p3 has base priority 1
-        PL011_putc( UART0, '@', true );
+      //set base priority according to process image
+      if ( x == a ){
+        PL011_putc( UART0, '3', true );
         pcb[ newpcb ].prtb = p3prt;
       }
-      else if ( x == b ){ //p4 has base priority 2
-        PL011_putc( UART0, '#', true );
+      else if ( x == b ){
+        PL011_putc( UART0, '4', true );
         pcb[ newpcb ].prtb = p4prt;
       }
-      else if ( x == c ){ //p5 has base priority 3
-        PL011_putc( UART0, '&', true );
+      else if ( x == c ){
+        PL011_putc( UART0, '5', true );
         pcb[ newpcb ].prtb = p5prt;
+      }
+      else if ( x == d ){
+        PL011_putc( UART0, '6', true );
+        pcb[ newpcb ].prtb = p6prt;
       }
       break;
     }
+
     case 0x06 : { //0x06 => kill( pid, x ),
       PL011_putc( UART0, ' ', true );
       PL011_putc( UART0, 'K', true );
+
       int current = (uint32_t)ctx->gpr[0];
       if (current < pcbcount) {
         removePCB(current);
       }
       else{
-        PL011_putc( UART0, ' ', true );
-        PL011_putc( UART0, 'H', true );
+        PL011_putc( UART0, 'x', true );
       }
+      break;
+    }
+
+    case 0x07 : { // 0x07 => nice( pid, x )
+      //increase prtb of pcb[ pid ] to x
+      PL011_putc( UART0, ' ', true );
+      PL011_putc( UART0, 'B', true );
+
+      int x = (uint32_t)ctx->gpr[0];
+      int s = (uint32_t)ctx->gpr[1];
+      pcb[ x ].prtb = pcb[ x ].prtb + s;
       break;
     }
 
